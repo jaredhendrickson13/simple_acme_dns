@@ -6,13 +6,13 @@ class DNSQuery:
 
     def __init__(self, domain, rtype="A", nameservers=None, authoritative=False, round_robin=False):
         """
-        Initializes and executes our DNS query.
-        :param domain: (str) the FQDN to query.
-        :param rtype: (str) the DNS request type (e.g. `A`, `TXT`, `CNAME`, etc.).
-        :param nameservers: (list) nameservers to query when making DNS requests.
-        :param authoritative: (bool) indicate whether the authoritative nameserver for the domain should be identified
-        and used. Once identified, the `nameservers` will be replaced with the authoritative nameserver.
-        :param round_robin: (bool) rotate between each nameserver instead of the default failover method.
+        Initializes and executes our DNS query.\n
+        - :param `domain` [`str`]: the FQDN to query.\n
+        - :param `rtype` [`str`]: the DNS request type (e.g. `A`, `TXT`, `CNAME`, etc.).\n
+        - :param `nameservers` [`list`]: nameservers to query when making DNS requests.\n
+        - :param `authoritative` [`bool`]: indicate whether the authoritative nameserver for the domain should be
+        identified and used. Once identified, the `nameservers` will be replaced with the authoritative nameserver.\n
+        - :param `round_robin` [`bool`]: rotate between each nameserver instead of the default failover method.\n
         """
         self.round_robin = round_robin
         self.type = rtype.upper()
@@ -25,8 +25,8 @@ class DNSQuery:
 
     def resolve(self):
         """
-        Queries the nameservers with our configured object values.
-        :return: (list) returns a list of answer values from the request. The list will be empty if no record was found.
+        Queries the nameservers with our configured object values.\n
+        - :return [`list`]: answer values from the request. The list will be empty if no record was found.\n
         """
         # Resolve the DNS query
         try:
