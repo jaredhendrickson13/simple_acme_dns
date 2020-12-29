@@ -1,13 +1,13 @@
-pyacmedns
+simple_acme_dns
 ================
-pyacmedns is a pure-Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
+**simple_acme_dns** is a pure-Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts without the need for an external tool like `certbot`. Although this module is intended for use
 with Let's Encrypt, it will support any CA utilizing the ACME protocol.
 
 Sub-modules
 -----------
-* pyacmedns.errors
-* pyacmedns.tools
+* simple_acme_dns.errors
+* simple_acme_dns.tools
 
 Classes
 -------
@@ -68,7 +68,7 @@ will be required if True.
 #### Example
 
 ```python
->>> client = pyacmedns.ACMEClient.load_account('{"account": {"body": {"key": {"n": "vtByzpW..."}}}}')
+>>> client = simple_acme_dns.ACMEClient.load_account('{"account": {"body": {"key": {"n": "vtByzpW..."}}}}')
 ```
 ---
 `load_account_from_file(filepath)`
@@ -84,7 +84,7 @@ will be required if True.
 #### Example
 
 ```python
->>> client = pyacmedns.ACMEClient.load_account('/tmp/my_acme_account.json')
+>>> client = simple_acme_dns.ACMEClient.load_account('/tmp/my_acme_account.json')
 ```
 ---
 ### Methods
