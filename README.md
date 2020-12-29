@@ -43,8 +43,8 @@ will be required if True.
 ## Example:
 
 ```python
->>> import pyacmedns
->>> client = pyacmedns.ACMEClient(
+>>> import simple_acme_dns
+>>> client = simple_acme_dns.ACMEClient(
 ...     domains=["test1.example.com", "test2.example.com"],
 ...     email="example@example.com",
 ...     directory="https://acme-staging-v02.api.letsencrypt.org/directory",

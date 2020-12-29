@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyacmedns
+import simple_acme_dns
 
 # Create a client object to interface with the ACME server. In this example, the Let's Encrypt staging environment.
-client = pyacmedns.ACMEClient(
+client = simple_acme_dns.ACMEClient(
     domains=["test.example.com"],
     email="user@example.com",
     directory="https://acme-staging-v02.api.letsencrypt.org/directory",

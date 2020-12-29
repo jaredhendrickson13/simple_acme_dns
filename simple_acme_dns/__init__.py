@@ -32,7 +32,7 @@ from . import errors
 from . import tools
 
 __doc__ = """
-pyacmedns is a Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
+simple_acme_dns is a Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts all within Python without the need for an external tool like `certbot`. Although this module 
 is intended for use with Let's Encrypt, it will support any CA utilizing the ACME protocol. 
 """
@@ -64,8 +64,8 @@ class ACMEClient:
 
         ## Example:\n
         ```python
-        >>> import pyacmedns
-        >>> client = pyacmedns.ACMEClient(
+        >>> import simple_acme_dns
+        >>> client = simple_acme_dns.ACMEClient(
         ...     domains=["test1.example.com", "test2.example.com"],
         ...     email="example@example.com",
         ...     directory="https://acme-staging-v02.api.letsencrypt.org/directory",
@@ -291,7 +291,7 @@ class ACMEClient:
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
-        self.__net__ = client.ClientNetwork(self.account_key, user_agent='pyacmedns/1.0.0')
+        self.__net__ = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/1.0.0')
         self.__directory__ = messages.Directory.from_json(self.__net__.get(self.directory).json())
         self.__client__ = client.ClientV2(self.__directory__, net=self.__net__)
 
@@ -397,7 +397,7 @@ class ACMEClient:
 
         ## Example\n
         ```python
-        >>> client = pyacmedns.ACMEClient.load_account('{"account": {"body": {"key": {"n": "vtByzpW..."}}}}')
+        >>> client = simple_acme_dns.ACMEClient.load_account('{"account": {"body": {"key": {"n": "vtByzpW..."}}}}')
         ```
         """
         acct_data = json.loads(json_data)
@@ -424,7 +424,7 @@ class ACMEClient:
 
         ## Example\n
         ```python
-        >>> client = pyacmedns.ACMEClient.load_account('/tmp/my_acme_account.json')
+        >>> client = simple_acme_dns.ACMEClient.load_account('/tmp/my_acme_account.json')
         ```
         """
         filepath = pathlib.Path(filepath).absolute()
@@ -442,7 +442,7 @@ class ACMEClient:
             raise errors.InvalidPath("No JSON account file found at '{path}'".format(path=(str(filepath))))
 
         # Re-initialize the ACME client and registration
-        obj.__net__ = client.ClientNetwork(obj.account_key, user_agent='pyacmedns/1.0.0')
+        obj.__net__ = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0')
         obj.__directory__ = messages.Directory.from_json(obj.__net__.get(obj.directory).json())
         obj.__client__ = client.ClientV2(obj.__directory__, net=obj.__net__)
         obj.account = obj.__client__.query_registration(obj.account)

@@ -29,7 +29,7 @@ def requirements():
 
 # Set our setup parameters
 setup(
-    name='pyacmedns',
+    name='simple_acme_dns',
     author='Jared Hendrickson',
     author_email='jaredhendrickson13@gmail.com',
     url="https://github.com/jaredhendrickson13/pyacmedns",
@@ -38,7 +38,7 @@ setup(
     long_description=read_me(),
     long_description_content_type="text/markdown",
     version="0.0.1",
-    packages=["pyacmedns", "pyacmedns.tools", "pyacmedns.errors"],
+    packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=requirements(),
     classifiers=[
         "Programming Language :: Python :: 3",

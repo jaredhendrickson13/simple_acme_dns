@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pyacmedns
+import simple_acme_dns
+import sys
+
+verbose = True if "--verbose" in sys.argv else False
 
 # Create a client object to interface with the ACME server. In this example, the Let's Encrypt staging environment.
-client = pyacmedns.ACMEClient(
-    domains=["test.example.com", "test2.example.coom"],
-    email="user@example.com",
+client = simple_acme_dns.ACMEClient(
+    domains=["test.jaredhendrickson.com", "test2.jaredhendrickson.com"],
+    email="user@jaredhendrickson.com",
     directory="https://acme-staging-v02.api.letsencrypt.org/directory",
     nameservers=["8.8.8.8", "1.1.1.1"]
 )
@@ -26,7 +29,7 @@ client = pyacmedns.ACMEClient(
 client.new_account()
 
 # Create a new RSA private key and CSR
-client.generate_private_key_and_csr(key_type="RSA4098")
+client.generate_private_key_and_csr(key_type="rsa4098")
 
 # Request the verification token for our domains. Print each challenge FQDN and it's corresponding token.
 for domain, token in client.request_verification_tokens():
@@ -50,7 +53,7 @@ else:
 client.revoke_certificate()
 
 # Renew the certificate with a new private key
-client.generate_private_key_and_csr(key_type="RSA2048")
+client.generate_private_key_and_csr(key_type="rsa2048")
 
 # Request a new verification token for our domains. Print each challenge FQDN and it's corresponding token.
 for domain, token in client.request_verification_tokens():
@@ -61,7 +64,7 @@ for domain, token in client.request_verification_tokens():
 # Start waiting for DNS propagation before requesting the certificate again
 # Keep checking DNS for the verification token for 1200 seconds (10 minutes) before giving up.
 # If a DNS query returns the matching verification token, request the certificate. Otherwise, deactivate the account.
-if client.check_dns_propagation(timeout=1200):
+if client.check_dns_propagation(timeout=1200, verbose=verbose):
     client.request_certificate()
     print(client.certificate.decode())
     print(client.private_key.decode())
