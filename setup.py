@@ -37,7 +37,7 @@ setup(
     description="A Python ACME client for the DNS-01 challenege",
     long_description=read_me(),
     long_description_content_type="text/markdown",
-    version="0.0.1",
+    version="1.0.0",
     packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=requirements(),
     classifiers=[
@@ -45,5 +45,5 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7'
+    python_requires='>=3.6'
 )
