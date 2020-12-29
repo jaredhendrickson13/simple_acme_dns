@@ -40,7 +40,7 @@ will be required if True.
 
 
 
-## Example:
+#### Example:
 
 ```python
 >>> import simple_acme_dns
@@ -53,7 +53,7 @@ will be required if True.
 ...     generate_csr=True
 ... )
 ```
-
+---
 ### Static methods
 
 `load_account(json_data)`
@@ -65,12 +65,12 @@ will be required if True.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client = pyacmedns.ACMEClient.load_account('{"account": {"body": {"key": {"n": "vtByzpW..."}}}}')
 ```
-
+---
 `load_account_from_file(filepath)`
 :   Loads an existing account from a JSON file created by the `export_account_to_file()` method.
     
@@ -81,12 +81,12 @@ will be required if True.
 - :raises `InvalidPath`: when the file path of the account JSON or key does not exist.
 
 
-## Example
+#### Example
 
 ```python
 >>> client = pyacmedns.ACMEClient.load_account('/tmp/my_acme_account.json')
 ```
-
+---
 ### Methods
 
 `check_dns_propagation(self, timeout=300, interval=2, authoritative=False, round_robin=True, verbose=False)`
@@ -110,7 +110,7 @@ their TXT record.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.nameservers = ["8.8.8.8", "1.1.1.1"]
@@ -130,7 +130,7 @@ Token 'moY3Cd0...' for '_acme-challenge.test1.example.com' not found in [] via 1
 Token 'moY3Cd0...' for '_acme-challenge.test1.example.com' found in ['moY3Cd0...'] via 8.8.8.8
 True
 ```
-
+---
 `deactivate_account(self, delete=True)`
 :   Deactivates the current account registration. This action is irreversible.
     
@@ -143,12 +143,12 @@ deleted after deactivation.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.deactivate_account()
 ```
-
+---
 `export_account(self, save_certificate=True, save_private_key=False)`
 :   Exports the object as a JSON string. This is useful when using a framework like Django and need to store account
     data as a string in the database.
@@ -167,13 +167,13 @@ JSON string.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.export_account(save_certificate=True, save_private_key=True)
 '{"account": {"body": {"key": {"n": "vtByzpW..."}}}}'
 ```
-
+---
 `export_account_to_file(self, path='.', name='account.json', save_certificate=True, save_private_key=False)`
 :   Exports our object as a JSON file.
     
@@ -191,7 +191,7 @@ JSON string.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.export_account_to_file(
@@ -201,7 +201,7 @@ JSON string.
 ...     save_private_key=True
 ... )
 ```
-
+---
 `generate_csr(self)`
 :   Generates a new CSR using the object's `domains` and `private_key` values.
     
@@ -214,13 +214,13 @@ with the same value.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.generate_csr()
 b'-----BEGIN CERTIFICATE REQUEST-----\nMIHxMIGZAgECMAAwWTATBgckjkn...'
 ```
-
+---
 `generate_private_key(self, key_type='ec256')`
 :   Generates a new RSA or EC private key.
     
@@ -234,13 +234,13 @@ b'-----BEGIN CERTIFICATE REQUEST-----\nMIHxMIGZAgECMAAwWTATBgckjkn...'
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.generate_private_key(key_type="ec384")
 b'-----BEGIN EC PRIVATE KEY-----\nMIGkAgEBBDAZRFNLcQdVJmLh42p8F4D92...'
 ```
-
+---
 `generate_private_key_and_csr(self, key_type='ec256')`
 :   Generates a new private key and CSR.
     
@@ -252,13 +252,13 @@ the `private_key` and `csr` properties of this object with the same values.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.generate_private_key_and_csr(key_type="rsa2048")
 (b'-----BEGIN PRIVATE KEY-----\nMIIEvAIBA...', b'-----BEGIN CERTIFICATE REQUEST-----\nMIHxM...')
 ```
-
+---
 `new_account(self)`
 :   Registers a new ACME account at the set ACME `directory` URL. By running this method, you are agreeing to the
     ACME servers terms of use.
@@ -271,12 +271,12 @@ the `private_key` and `csr` properties of this object with the same values.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.new_account()
 ```
-
+---
 `request_certificate(self, wait=0, timeout=90)`
 :   Requests a final verification answer from the ACME server and requests the certificate if verification was
     successful. If you request the certificate before DNS has propagated and verification fails, you must start
@@ -293,13 +293,13 @@ of this object with the same value.
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.request_certificate()
 b'-----BEGIN CERTIFICATE-----\nMIIEfzCCA2egAwI...
 ```
-
+---
 `request_verification_tokens(self)`
 :   Requests verification tokens from the ACME server for each `domains` value. These tokens must be uploaded as
     a DNS TXT record for each corresponding domain to complete verification.
@@ -310,7 +310,7 @@ b'-----BEGIN CERTIFICATE-----\nMIIEfzCCA2egAwI...
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.request_verification_tokens()
@@ -319,7 +319,7 @@ b'-----BEGIN CERTIFICATE-----\nMIIEfzCCA2egAwI...
     ('_acme-challenge.test2.example.com', 'asldfkjslweietj23_b...')
 ]
 ```
-
+---
 `revoke_certificate(self, reason=0)`
 :   Attempts to revoke the existing certificate from the issuing ACME server.
     
@@ -333,7 +333,7 @@ b'-----BEGIN CERTIFICATE-----\nMIIEfzCCA2egAwI...
 
 
 
-## Example
+#### Example
 
 ```python
 >>> client.revoke_certificate()
