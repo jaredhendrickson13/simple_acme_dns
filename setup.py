@@ -1,4 +1,4 @@
-# Copyright 2020 Jared Hendrickson
+# Copyright 2021 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ setup(
     description="A Python ACME client for the DNS-01 challenege",
     long_description=read_me(),
     long_description_content_type="text/markdown",
-    version="1.0.0",
+    version="1.0.1",
     packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=requirements(),
     classifiers=[
