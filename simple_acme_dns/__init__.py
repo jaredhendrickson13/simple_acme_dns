@@ -412,6 +412,12 @@ class ACMEClient:
         obj.account = messages.RegistrationResource.json_loads(json.dumps(acct_data['account']))
         obj.account_key = jose.JWKRSA.json_loads(acct_data['account_key'])
 
+        # Re-initialize the ACME client and registration
+        obj.__net__ = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0')
+        obj.__directory__ = messages.Directory.from_json(obj.__net__.get(obj.directory).json())
+        obj.__client__ = client.ClientV2(obj.__directory__, net=obj.__net__)
+        obj.account = obj.__client__.query_registration(obj.account)
+
         return obj
 
     @staticmethod
@@ -440,12 +446,6 @@ class ACMEClient:
             obj.account_path = filepath
         else:
             raise errors.InvalidPath("No JSON account file found at '{path}'".format(path=(str(filepath))))
-
-        # Re-initialize the ACME client and registration
-        obj.__net__ = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0')
-        obj.__directory__ = messages.Directory.from_json(obj.__net__.get(obj.directory).json())
-        obj.__client__ = client.ClientV2(obj.__directory__, net=obj.__net__)
-        obj.account = obj.__client__.query_registration(obj.account)
 
         return obj
 
