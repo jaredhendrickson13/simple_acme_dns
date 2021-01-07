@@ -34,7 +34,7 @@ from . import tools
 __doc__ = """
 simple_acme_dns is a Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts all within Python without the need for an external tool like `certbot`. Although this module 
-is intended for use with Let's Encrypt, it will support any CA utilizing the ACME protocol. 
+is intended for use with Let's Encrypt, it will support any CA utilizing the ACME v2 protocol. 
 """
 
 
@@ -129,7 +129,7 @@ class ACMEClient:
         """
         Generates a new RSA or EC private key.\n
         - :param `key_type` [`str`]: the requested `private_key` type. Options are: [`ec256`, `ec384`, `rsa2048`,
-        `rsa4098`]\n
+        `rsa4096`]\n
         - :return [`bytes`]: the encoded private key PEM data string. This method will update the `private_key` property
          of the object with the same value.\n
         - :raises `InvalidKeyType`: when an unknown/unsupported `key_type` is requested\n\n
@@ -160,14 +160,14 @@ class ACMEClient:
             key = OpenSSL.crypto.PKey()
             key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
             self.private_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
-        # Generate a RSA4098 private key
-        elif key_type == 'rsa4098':
+        # Generate a RSA4096 private key
+        elif key_type == 'rsa4096':
             key = OpenSSL.crypto.PKey()
             key.generate_key(OpenSSL.crypto.TYPE_RSA, 4096)
             self.private_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
         # Otherwise, the requested key type is not supported. Throw an error
         else:
-            options = ['ec256', 'ec384', 'rsa2048', 'rsa4098']
+            options = ['ec256', 'ec384', 'rsa2048', 'rsa4096']
             msg = "Invalid private key rtype '{key_type}'. Options {options}".format(key_type=key_type, options=options)
             raise errors.InvalidKeyType(msg)
         return self.private_key
@@ -176,7 +176,7 @@ class ACMEClient:
         """
         Generates a new private key and CSR.\n
         - :param `key_type` [`str`]: the requested `private_key` type. Options are: [`ec256`, `ec384`, `rsa2048`,
-        `rsa4098`]\n
+        `rsa4096`]\n
         - :return [`tuple`]: first value contains the key, the second value contains the CSR. This method will update
         the `private_key` and `csr` properties of this object with the same values.\n\n
 
@@ -374,8 +374,6 @@ class ACMEClient:
         ... )
         ```
         """
-        self.__validate_registration__()
-        self.__validate_domains__()
         dir_path = pathlib.Path(path).absolute()
 
         # Ensure our path is an existing directory, throw an error otherwise
@@ -531,12 +529,14 @@ class ACMEClient:
 
     def __verify_challenge__(self):
         """
-        Checks that the DNS-01 challenge is supported by the ACME server and initializes the challenge. This is an
+        Checks that the DNS-01 challenge is supported by the ACME server and initializes the challenge. In addition,
+        this method will overwrite the `domains` attribute with the domains listed in each challenge. This is an
         internal method and is not intended for use otherwise.
         :return: (list) a list of acme.challenges.ChallengeBody objects
         :raises: ChallengeUnavailable when the specified ACME server does not support the DNS-01 challenge
         """
         self.__challenges__ = []
+        self.domains = []
         authz_list = self.__order__.authorizations
 
         # Loop through each of our authorizations
@@ -546,6 +546,7 @@ class ACMEClient:
                 # Add the DNS-01 challenge if it is found
                 if isinstance(i.chall, challenges.DNS01):
                     self.__challenges__.append(i)
+                    self.domains += [authz.body.identifier.value]
 
         # If no challenges were found, throw an error
         if not self.__challenges__:
