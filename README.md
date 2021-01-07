@@ -2,7 +2,7 @@ simple_acme_dns
 ================
 **simple_acme_dns** is a pure-Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts without the need for an external tool like `certbot`. Although this module is intended for use
-with Let's Encrypt, it will support any CA utilizing the ACME protocol.
+with Let's Encrypt, it will support any CA utilizing the ACME v2 protocol.
 
 Sub-modules
 -----------
@@ -225,7 +225,7 @@ b'-----BEGIN CERTIFICATE REQUEST-----\nMIHxMIGZAgECMAAwWTATBgckjkn...'
 :   Generates a new RSA or EC private key.
     
 - :param `key_type` [`str`]: the requested `private_key` type. Options are: [`ec256`, `ec384`, `rsa2048`,
-`rsa4098`]
+`rsa4096`]
 
 - :return [`bytes`]: the encoded private key PEM data string. This method will update the `private_key` property
  of the object with the same value.
@@ -245,7 +245,7 @@ b'-----BEGIN EC PRIVATE KEY-----\nMIGkAgEBBDAZRFNLcQdVJmLh42p8F4D92...'
 :   Generates a new private key and CSR.
     
 - :param `key_type` [`str`]: the requested `private_key` type. Options are: [`ec256`, `ec384`, `rsa2048`,
-`rsa4098`]
+`rsa4096`]
 
 - :return [`tuple`]: first value contains the key, the second value contains the CSR. This method will update
 the `private_key` and `csr` properties of this object with the same values.

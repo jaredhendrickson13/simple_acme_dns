@@ -29,7 +29,7 @@ client = simple_acme_dns.ACMEClient(
 client.new_account()
 
 # Create a new RSA private key and CSR
-client.generate_private_key_and_csr(key_type="rsa4098")
+client.generate_private_key_and_csr(key_type="rsa4096")
 
 # Request the verification token for our domains. Print each challenge FQDN and it's corresponding token.
 for domain, token in client.request_verification_tokens():
