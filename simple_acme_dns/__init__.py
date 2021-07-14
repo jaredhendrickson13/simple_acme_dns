@@ -502,11 +502,11 @@ class ACMEClient:
             # Loop through each domain being verified
             for domain, token, resolver in resolvers:
                 # Only try to verify the domain if it has not already been verified
-                if domain not in verified:
+                if token not in verified:
                     resolver.resolve()
                     # Save this domain as verified if our token was found in the TXT record values
                     if token in resolver.values:
-                        verified.append(domain)
+                        verified.append(token)
                     # If verbose mode is enabled, print the results to the console
                     if verbose:
                         msg = "Token '{token}' for '{domain}' {action} in {values} via {ns}".format(
@@ -598,6 +598,9 @@ class ACMEClient:
             msg = "Domains must be rtype 'list'."
             raise errors.InvalidDomain(msg)
         for domain in self.domains:
+            if domain[:2] == "*.":
+                # If wildcard domain, strip of the wildcard to validate domain
+                domain = domain[2:]
             if not validators.domain(domain):
                 msg = "Invalid domain name '{domain}'. Domain name must adhere to RFC2181.".format(domain=domain)
                 raise errors.InvalidDomain(msg)
