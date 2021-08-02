@@ -512,7 +512,7 @@ class ACMEClient:
                         msg = "Token '{token}' for '{domain}' {action} in {values} via {ns}".format(
                             token=token,
                             domain=domain,
-                            action=('found' if domain in verified else 'not found'),
+                            action=('found' if token in verified else 'not found'),
                             values=resolver.values,
                             ns=resolver.last_nameserver
                         )
