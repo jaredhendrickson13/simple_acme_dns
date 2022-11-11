@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Custom exception classes for simple_acme_dns."""
+
 
 class ChallengeUnavailable(Exception):
     """Error occurs when the requested ACME server does not offer the DNS-01 challenge"""

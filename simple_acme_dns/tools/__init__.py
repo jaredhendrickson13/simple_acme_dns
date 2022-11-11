@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""DNS tools to assist ACME verification."""
 import dns.resolver
 
 
@@ -63,14 +63,14 @@ class DNSQuery:
         """
         # Get our SOA record values for this domain and remove the trailing dot from each
         try:
-            ns = self.__parse_values__(self.__resolve__(self.domain, rtype="SOA", nameservers=None))
-            ns = ns[0].split(" ")[0]
-            ns = ns[:-1]
-            ns = self.__parse_values__(self.__resolve__(ns, rtype="A", nameservers=None))
+            nameserver = self.__parse_values__(self.__resolve__(self.domain, rtype="SOA", nameservers=None))
+            nameserver = nameserver[0].split(" ")[0]
+            nameserver = nameserver[:-1]
+            nameserver = self.__parse_values__(self.__resolve__(nameserver, rtype="A", nameservers=None))
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            ns = []
+            nameserver = []
 
-        return ns
+        return nameserver
 
     @staticmethod
     def __resolve__(domain, rtype="A", nameservers=None):

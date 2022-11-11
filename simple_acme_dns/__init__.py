@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import OpenSSL
 import datetime
-import josepy as jose
 import json
 import pathlib
 import time
-import validators
 
+import OpenSSL
+import josepy as jose
+import validators
 from acme import challenges
 from acme import client
 from acme import crypto_util
@@ -31,6 +31,8 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 from . import errors
 from . import tools
 
+# Constants and Variables
+DNS_LABEL = '_acme-challenge'
 __doc__ = """
 simple_acme_dns is a Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts all within Python without the need for an external tool like `certbot`. Although this module 
@@ -76,7 +78,6 @@ class ACMEClient:
         ```
 
         """
-        self.DNS_LABEL = '_acme-challenge'
         self.domains = domains if domains else []
         self.email = email
         self.directory = directory
@@ -168,7 +169,7 @@ class ACMEClient:
         # Otherwise, the requested key type is not supported. Throw an error
         else:
             options = ['ec256', 'ec384', 'rsa2048', 'rsa4096']
-            msg = "Invalid private key rtype '{key_type}'. Options {options}".format(key_type=key_type, options=options)
+            msg = f"Invalid private key rtype '{key_type}'. Options {options}"
             raise errors.InvalidKeyType(msg)
         return self.private_key
 
@@ -213,8 +214,8 @@ class ACMEClient:
         self.__challenges__ = self.__verify_challenge__()
 
         # Loop through each of our challenges and extract the response and verification token from each
-        for i, c in enumerate(self.__challenges__):
-            response, validation = c.response_and_validation(self.__client__.net.key)
+        for _, challenge in enumerate(self.__challenges__):
+            response, validation = challenge.response_and_validation(self.__client__.net.key)
             self.__responses__.append(response)
             self.__verification_tokens__.append(validation)
 
@@ -243,8 +244,8 @@ class ACMEClient:
         deadline = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
 
         # For each challenge, request an answer.
-        for i, c in enumerate(self.__challenges__):
-            self.__answers__.append(self.__client__.answer_challenge(c, self.__responses__[i]))
+        for index, challenge in enumerate(self.__challenges__):
+            self.__answers__.append(self.__client__.answer_challenge(challenge, self.__responses__[index]))
 
         # Request our final order and save the certificate if successful
         self.__final_order__ = self.__client__.poll_and_finalize(self.__order__, deadline=deadline)
@@ -379,11 +380,11 @@ class ACMEClient:
         # Ensure our path is an existing directory, throw an error otherwise
         if dir_path.is_dir():
             # Open the file and write our JSON content
-            with open(str(dir_path.joinpath(name)), 'w') as (wa):
-                wa.write(self.export_account(save_certificate, save_private_key))
+            with open(str(dir_path.joinpath(name)), 'w', encoding="utf-8") as account_file:
+                account_file.write(self.export_account(save_certificate, save_private_key))
                 self.account_path = str(dir_path.joinpath(name))
         else:
-            msg = "Directory at '{path}' does not exist.".format(path=path)
+            msg = f"Directory at '{path}' does not exist."
             raise errors.InvalidPath(msg)
 
     @staticmethod
@@ -436,14 +437,14 @@ class ACMEClient:
         # Ensure our file exists, throw an error otherwise
         if filepath.exists():
             # Open our file and read it's contents.
-            with open(filepath, 'r') as (rj):
-                json_data = rj.read()
+            with open(filepath, 'r', encoding="utf-8") as json_file:
+                json_data = json_file.read()
 
             # Load contents into a new object.
             obj = ACMEClient.load_account(json_data)
             obj.account_path = filepath
         else:
-            raise errors.InvalidPath("No JSON account file found at '{path}'".format(path=(str(filepath))))
+            raise errors.InvalidPath(f"No JSON account file found at '{filepath}'")
 
         return obj
 
@@ -488,14 +489,14 @@ class ACMEClient:
 
         # Create a DNS resolver object for each domain being verified
         for rdomain, rtoken in self.verification_tokens:
-            r = tools.DNSQuery(
+            resolv = tools.DNSQuery(
                 rdomain,
                 rtype='TXT',
                 authoritative=authoritative,
                 nameservers=self.nameservers,
                 round_robin=round_robin
             )
-            resolvers.append((rdomain, rtoken, r))
+            resolvers.append((rdomain, rtoken, resolv))
 
         # Loop until we have exceeded our timeout value
         while datetime.datetime.now() < timeout:
@@ -509,13 +510,10 @@ class ACMEClient:
                         verified.append(token)
                     # If verbose mode is enabled, print the results to the console
                     if verbose:
-                        msg = "Token '{token}' for '{domain}' {action} in {values} via {ns}".format(
-                            token=token,
-                            domain=domain,
-                            action=('found' if token in verified else 'not found'),
-                            values=resolver.values,
-                            ns=resolver.last_nameserver
-                        )
+                        action = ('found' if token in verified else 'not found')
+                        values = resolver.values
+                        nameserver = resolver.last_nameserver
+                        msg = f"Token '{token}' for '{domain}' {action} in {values} via {nameserver}"
                         print(msg)
 
             # If all our domains have been verified
@@ -537,7 +535,7 @@ class ACMEClient:
         """
         self.__challenges__ = []
         self.domains = []
-        authz_list = self.__order__.authorizations
+        authz_list = list(self.__order__.authorizations)
 
         # Loop through each of our authorizations
         for authz in authz_list:
@@ -561,7 +559,7 @@ class ACMEClient:
         :return: (none)
         :raises: InvalidAccount when no account registration is configured for this object
         """
-        if type(self.__client__) != client.ClientV2:
+        if not isinstance(self.__client__, client.ClientV2):
             msg = 'No account registration found. You must register a new account or load an existing account first.'
             raise errors.InvalidAccount(msg)
 
@@ -594,7 +592,7 @@ class ACMEClient:
         if not self.domains:
             msg = 'No domains found. You must set a domains value first.'
             raise errors.InvalidDomain(msg)
-        if type(self.domains) != list:
+        if not isinstance(self.domains, list):
             msg = "Domains must be rtype 'list'."
             raise errors.InvalidDomain(msg)
         for domain in self.domains:
@@ -602,7 +600,7 @@ class ACMEClient:
                 # If wildcard domain, strip of the wildcard to validate domain
                 domain = domain[2:]
             if not validators.domain(domain):
-                msg = "Invalid domain name '{domain}'. Domain name must adhere to RFC2181.".format(domain=domain)
+                msg = f"Invalid domain name '{domain}'. Domain name must adhere to RFC2181."
                 raise errors.InvalidDomain(msg)
 
     def __validate_directory__(self):
@@ -646,7 +644,7 @@ class ACMEClient:
 
         # Loop through each domain and group it with it's corresponding verification token
         for i, domain in enumerate(self.domains):
-            groupings.append((self.DNS_LABEL + '.' + domain, self.__verification_tokens__[i]))
+            groupings.append((DNS_LABEL + '.' + domain, self.__verification_tokens__[i]))
 
         self.verification_tokens = groupings
         return groupings
