@@ -21,6 +21,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
+    # Set environment variables
+    env:
+      GCLOUD_DNS_JSON: '${{ secrets.GCLOUD_DNS_JSON }}'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -28,8 +31,6 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install simple_acme_dns package with dev dependencies
-        env:
-          GCLOUD_DNS_JSON: '${{ secrets.GCLOUD_DNS_JSON }}'
         run: |
           python3 -m pip install .
           python3 -m pip install -r requirements-dev.txt
