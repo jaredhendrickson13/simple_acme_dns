@@ -6,4 +6,3 @@ urllib3~=1.26.2
 requests~=2.25.1
 validators~=0.18.2
 dnspython~=2.0.0
-pylint~=2.15.5
