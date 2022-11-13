@@ -1,4 +1,4 @@
-# Copyright 2021 Jared Hendrickson
+# Copyright 2022 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class DNSQuery:
             self.answers = []
 
         # Rotate the nameservers if round robin mode is enabled
-        if self.round_robin:
+        if self.round_robin and len(self.nameservers) > 1:
             self.last_nameserver = self.nameservers[0]
             self.nameservers = self.nameservers[1:] + [self.last_nameserver]
 
@@ -61,14 +61,28 @@ class DNSQuery:
         Checks the domain's SOA record for the authoritative nameserver of this domain.
         :return: (list) the authoritative nameserver(s).
         """
-        # Get our SOA record values for this domain and remove the trailing dot from each
-        try:
-            nameserver = self.__parse_values__(self.__resolve__(self.domain, rtype="SOA", nameservers=None))
-            nameserver = nameserver[0].split(" ")[0]
-            nameserver = nameserver[:-1]
-            nameserver = self.__parse_values__(self.__resolve__(nameserver, rtype="A", nameservers=None))
-        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            nameserver = []
+        # Local variables
+        nameserver = []
+        domain_sections = self.domain.split(".")
+
+        # Loop through each level of the subdomain to find the SOA for this FQDN.
+        while domain_sections:
+            # Piece together the remaining domain sections to create our next target domain
+            domain = ".".join(domain_sections)
+
+            # Get our SOA record values for this domain and remove the trailing dot from each
+            try:
+                nameserver = self.__parse_values__(self.__resolve__(domain, rtype="SOA", nameservers=self.nameservers))
+                break
+            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
+                domain_sections.pop(0)
+                continue
+
+        # Extract the authoritative nameserver's IP from the response
+        nameserver = nameserver[0].split("SOA ")
+        nameserver = nameserver[0].split(" ")[0]
+        nameserver = nameserver[:-1]
+        nameserver = self.__parse_values__(self.__resolve__(nameserver, rtype="A", nameservers=self.nameservers))
 
         return nameserver
 
