@@ -73,12 +73,15 @@ class GoogleDNSClient:
         :param ttl: a time-to-live value for the DNS record to create/update in integer format
         :param data: the data values to assign the DNS record in list format
         """
+        # Authenticate by loading the JSON service file via the GCLOUD_DNS_JSON enviroment variable
+        service_account_json = json.loads(os.environ.get("GCLOUD_DNS_JSON", '{}'))
+        self.client = dns.Client.from_service_account_info(service_account_json)
 
+        # Set object attributes
         self.name = name + "."
         self.rtype = rtype.upper()
         self.ttl = ttl
         self.data = data
-        self.client = dns.Client.from_service_account_json(os.environ.get("GCLOUD_DNS_JSON", "./gcloud_dns.json"))
         self.zone = None
         self.record = None
         self.get_zone()
