@@ -1,5 +1,6 @@
 simple_acme_dns
 ================
+[![Coverage](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml)
 [![PyPI](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml)
 [![PyLint](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml)
 [![CodeQL](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml)
