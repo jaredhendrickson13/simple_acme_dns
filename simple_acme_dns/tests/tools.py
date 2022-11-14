@@ -19,7 +19,7 @@ from google.cloud import dns
 
 
 # Functions
-def is_cert(cert: bytes):
+def is_cert(cert: bytes) -> bool:
     """Checks if a given cert is PEM formatted certificate."""
     # Check for PEM cert
     if cert.startswith(b'-----BEGIN CERTIFICATE-----'):
@@ -28,7 +28,7 @@ def is_cert(cert: bytes):
     return False
 
 
-def is_private_key(private_key: bytes, key_type: str):
+def is_private_key(private_key: bytes, key_type: str) -> bool:
     """Checks if a given private key matches a specific key type."""
     # Check for RSA keys
     if key_type.startswith("rsa") and private_key.startswith(b'-----BEGIN PRIVATE KEY-----'):
@@ -41,7 +41,7 @@ def is_private_key(private_key: bytes, key_type: str):
     return False
 
 
-def is_csr(csr: bytes):
+def is_csr(csr: bytes) -> bool:
     """Checks if a given bytes is a CSR"""
     if csr.startswith(b'-----BEGIN CERTIFICATE REQUEST-----'):
         return True
@@ -49,7 +49,7 @@ def is_csr(csr: bytes):
     return False
 
 
-def is_json(data: str):
+def is_json(data: str) -> bool:
     """Checks if a string is valid JSON."""
     try:
         json.loads(data)
@@ -65,7 +65,7 @@ class GoogleDNSClient:
     Google Cloud DNS to complete the DNS-01 challenge when requesting certificates.
     """
 
-    def __init__(self, name, rtype, ttl, data):
+    def __init__(self, name: str, rtype: str, ttl: int, data: str) -> None:
         """
         Assigns required parameters to object attributes and assigns default attributes
         :param name: the FQDN of the DNS record to create/update/delete in string format
@@ -86,7 +86,7 @@ class GoogleDNSClient:
         self.record = None
         self.get_zone()
 
-    def get_zone(self):
+    def get_zone(self) -> (dns.ManagedZone, None):
         """
         Retrieves each DNS zones the GCLOUD_DNS_JSON has access to
         :return: the DNSZone object
@@ -101,7 +101,7 @@ class GoogleDNSClient:
 
         return None
 
-    def get_record(self):
+    def get_record(self) -> (dns.ResourceRecordSet, None):
         """
         Retrieves an existing record for the name and rtype specified in this object
         :return: a DNSRecord object
@@ -116,7 +116,7 @@ class GoogleDNSClient:
 
         return None
 
-    def create_record(self, replace=False):
+    def create_record(self, replace: bool = False) -> None:
         """
         Creates a new DNS record with our current name, rtype, ttl and data attributes
         :param replace: a boolean specifiying whether existing records should be replaced
@@ -137,7 +137,7 @@ class GoogleDNSClient:
         while change.status != "done":
             change.reload()
 
-    def delete_record(self):
+    def delete_record(self) -> None:
         """
         Deletes an existing DNS record matching our current name and rtype
         :return: None, the record will be created in Google Cloud DNS after running
