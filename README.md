@@ -1,5 +1,10 @@
 simple_acme_dns
 ================
+[![Coverage](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml)
+[![PyPI](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml)
+[![PyLint](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml)
+[![CodeQL](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml)
+
 **simple_acme_dns** is a pure-Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts without the need for an external tool like `certbot`. Although this module is intended for use
 with Let's Encrypt, it will support any CA utilizing the ACME v2 protocol.

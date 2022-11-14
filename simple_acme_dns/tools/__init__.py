@@ -1,4 +1,4 @@
-# Copyright 2021 Jared Hendrickson
+# Copyright 2022 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""DNS tools to assist ACME verification."""
 import dns.resolver
 
 
 class DNSQuery:
     """A basic class to make DNS queries"""
 
-    def __init__(self, domain, rtype="A", nameservers=None, authoritative=False, round_robin=False):
+    def __init__(
+        self,
+        domain: str,
+        rtype: str = "A",
+        nameservers: list = None,
+        authoritative: bool = False,
+        round_robin: bool = False
+    ) -> None:
         """
         Initializes and executes our DNS query.\n
         - :param `domain` [`str`]: the FQDN to query.\n
@@ -37,7 +44,7 @@ class DNSQuery:
         self.answers = []
         self.last_nameserver = ""
 
-    def resolve(self):
+    def resolve(self) -> list:
         """
         Queries the nameservers with our configured object values.\n
         - :return [`list`]: answer values from the request. The list will be empty if no record was found.\n
@@ -49,31 +56,45 @@ class DNSQuery:
             self.answers = []
 
         # Rotate the nameservers if round robin mode is enabled
-        if self.round_robin:
+        if self.round_robin and len(self.nameservers) > 1:
             self.last_nameserver = self.nameservers[0]
             self.nameservers = self.nameservers[1:] + [self.last_nameserver]
 
         self.values = self.__parse_values__(self.answers)
         return self.values
 
-    def __get_authoritative_nameservers__(self):
+    def __get_authoritative_nameservers__(self) -> list:
         """
         Checks the domain's SOA record for the authoritative nameserver of this domain.
         :return: (list) the authoritative nameserver(s).
         """
-        # Get our SOA record values for this domain and remove the trailing dot from each
-        try:
-            ns = self.__parse_values__(self.__resolve__(self.domain, rtype="SOA", nameservers=None))
-            ns = ns[0].split(" ")[0]
-            ns = ns[:-1]
-            ns = self.__parse_values__(self.__resolve__(ns, rtype="A", nameservers=None))
-        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            ns = []
+        # Local variables
+        nameserver = []
+        domain_sections = self.domain.split(".")
 
-        return ns
+        # Loop through each level of the subdomain to find the SOA for this FQDN.
+        while domain_sections:
+            # Piece together the remaining domain sections to create our next target domain
+            domain = ".".join(domain_sections)
+
+            # Get our SOA record values for this domain and remove the trailing dot from each
+            try:
+                nameserver = self.__parse_values__(self.__resolve__(domain, rtype="SOA", nameservers=self.nameservers))
+                break
+            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
+                domain_sections.pop(0)
+                continue
+
+        # Extract the authoritative nameserver's IP from the response
+        nameserver = nameserver[0].split("SOA ")
+        nameserver = nameserver[0].split(" ")[0]
+        nameserver = nameserver[:-1]
+        nameserver = self.__parse_values__(self.__resolve__(nameserver, rtype="A", nameservers=self.nameservers))
+
+        return nameserver
 
     @staticmethod
-    def __resolve__(domain, rtype="A", nameservers=None):
+    def __resolve__(domain: str, rtype: str = "A", nameservers: list = None) -> list:
         """
         Internal function-like DNS request method.
         :return: (list) returns a list of answer values from the request.
@@ -85,7 +106,7 @@ class DNSQuery:
         return DNSQuery.__filter_list__(resolver.resolve(domain, rtype).response.answer[0].to_text().split("\n"))
 
     @staticmethod
-    def __filter_list__(data):
+    def __filter_list__(data: list) -> list:
         """
         Filters our list properties to remove blank entries.
         :param data: (list) the list to remove blank entries on.
@@ -94,7 +115,7 @@ class DNSQuery:
         return list(filter(None, data))
 
     @staticmethod
-    def __parse_values__(answers):
+    def __parse_values__(answers: list) -> list:
         """
         Parses the value portion of the query answer into it's own list.
         :param answers: (list) the answers list returned by `__resolve__()` method.

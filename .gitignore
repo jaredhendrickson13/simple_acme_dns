@@ -5,3 +5,7 @@
 *dist*
 *.egg-info*
 .DS_Store
+*gcloud_dns.json
+.coverage
+*_account-test.json
+docs*
