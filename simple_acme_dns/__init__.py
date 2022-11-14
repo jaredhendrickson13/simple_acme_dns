@@ -41,7 +41,6 @@ is intended for use with Let's Encrypt, it will support any CA utilizing the ACM
 """
 
 
-
 class ACMEClient:
     """
     A basic ACME client object to interface with a CA using the ACME DNS-01 challenge.\n
@@ -328,7 +327,11 @@ class ACMEClient:
 
         # If this object contains a linked file path, and deletion is requested, delete the linked file
         if self.account_path and delete:
-            pathlib.Path(self.account_path).unlink(missing_ok=True)
+            # Delete the file if it's present
+            try:
+                pathlib.Path(self.account_path).unlink()
+            except FileNotFoundError:
+                pass
 
     def export_account(self, save_certificate: bool = True, save_private_key: bool = False) -> str:
         """
