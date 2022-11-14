@@ -59,8 +59,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
 
         # Deactivate the created ACME account
         try:
-            cls.client.deactivate_account()
-        except simple_acme_dns.errors.InvalidAccount:
+            cls.client.deactivate_account(delete=True)
+        except (simple_acme_dns.errors.InvalidAccount, acme.messages.Error):
             pass
 
     def test_generate_keys_and_csr(self):
@@ -181,6 +181,20 @@ class TestSimpleAcmeDns(unittest.TestCase):
 
         # Revoke the certificate again and ensure it raises an error stating it's already revoked
         self.assertRaises(acme.messages.Error, self.client.revoke_certificate)
+
+    def test_delete_account_file(self):
+        """Ensure we can delete associated account files."""
+        # Enroll a new account without saving it and ensure it can be 'deleted' without raising an error
+        client = simple_acme_dns.ACMEClient(
+            domains=TEST_DOMAINS,
+            email=TEST_EMAIL,
+            directory=TEST_DIRECTORY,
+            nameservers=TEST_NAMESERVERS,
+            new_account=True,
+            generate_csr=True
+        )
+        client.account_path = "INVALID_FILE.json"
+        self.assertIsNone(client.deactivate_account(delete=True))
 
 
 if __name__ == '__main__':
