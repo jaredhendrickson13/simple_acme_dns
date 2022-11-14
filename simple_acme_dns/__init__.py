@@ -33,11 +33,13 @@ from . import tools
 
 # Constants and Variables
 DNS_LABEL = '_acme-challenge'
+__pdoc__ = {"tests": False}    # Excludes 'tests' submodule from documentation
 __doc__ = """
 simple_acme_dns is a Python ACME client specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
 certificates and accounts all within Python without the need for an external tool like `certbot`. Although this module 
 is intended for use with Let's Encrypt, it will support any CA utilizing the ACME v2 protocol. 
 """
+
 
 
 class ACMEClient:
