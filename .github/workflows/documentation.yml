@@ -35,7 +35,7 @@ jobs:
       - name: Build documentation
         run: |
           python -m pip install --upgrade pip
-          python3 -m pip install requirements-dev.txt
+          python3 -m pip install -r requirements-dev.txt
           python3 -m pip install .
           pdoc3 simple_acme_dns --html --force --output-dir docs/html
       - name: Upload artifact
