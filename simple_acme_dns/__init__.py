@@ -620,10 +620,9 @@ class ACMEClient:
             msg = "Domains must be rtype 'list'."
             raise errors.InvalidDomain(msg)
         for domain in self.domains:
-            if domain[:2] == "*.":
-                # If wildcard domain, strip of the wildcard to validate domain
-                domain = domain[2:]
-            if not validators.domain(domain):
+            # If wildcard domain, strip of the wildcard to validate domain
+            domain_to_validate = domain[2:] if domain[:2] == "*." else domain
+            if not validators.domain(domain_to_validate):
                 msg = f"Invalid domain name '{domain}'. Domain name must adhere to RFC2181."
                 raise errors.InvalidDomain(msg)
 
