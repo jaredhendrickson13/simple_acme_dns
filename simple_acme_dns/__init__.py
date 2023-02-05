@@ -665,6 +665,10 @@ class ACMEClient:
 
         # Loop through each domain and group it with it's corresponding verification token
         for i, domain in enumerate(self.domains):
+            # If wildcard domain, strip of the wildcard to validate the base domain instead.
+            domain = domain[2:] if domain[:2] == "*." else domain
+
+            # Add the ACME verification DNS name and token as a tuple to groupings
             groupings.append((DNS_LABEL + '.' + domain, self.__verification_tokens__[i]))
 
         self.verification_tokens = groupings
