@@ -1,4 +1,4 @@
-# Copyright 2022 Jared Hendrickson
+# Copyright 2023 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -558,7 +558,6 @@ class ACMEClient:
         :raises: ChallengeUnavailable when the specified ACME server does not support the DNS-01 challenge
         """
         self.__challenges__ = []
-        self.domains = []
         authz_list = list(self.__order__.authorizations)
 
         # Loop through each of our authorizations
@@ -568,7 +567,6 @@ class ACMEClient:
                 # Add the DNS-01 challenge if it is found
                 if isinstance(i.chall, challenges.DNS01):
                     self.__challenges__.append(i)
-                    self.domains += [authz.body.identifier.value]
 
         # If no challenges were found, throw an error
         if not self.__challenges__:
@@ -667,6 +665,10 @@ class ACMEClient:
 
         # Loop through each domain and group it with it's corresponding verification token
         for i, domain in enumerate(self.domains):
+            # If wildcard domain, strip of the wildcard to validate the base domain instead.
+            domain = domain[2:] if domain[:2] == "*." else domain
+
+            # Add the ACME verification DNS name and token as a tuple to groupings
             groupings.append((DNS_LABEL + '.' + domain, self.__verification_tokens__[i]))
 
         self.verification_tokens = groupings
