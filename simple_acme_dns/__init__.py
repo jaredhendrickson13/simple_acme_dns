@@ -558,7 +558,6 @@ class ACMEClient:
         :raises: ChallengeUnavailable when the specified ACME server does not support the DNS-01 challenge
         """
         self.__challenges__ = []
-        self.domains = []
         authz_list = list(self.__order__.authorizations)
 
         # Loop through each of our authorizations
@@ -568,7 +567,6 @@ class ACMEClient:
                 # Add the DNS-01 challenge if it is found
                 if isinstance(i.chall, challenges.DNS01):
                     self.__challenges__.append(i)
-                    self.domains += [authz.body.identifier.value]
 
         # If no challenges were found, throw an error
         if not self.__challenges__:
