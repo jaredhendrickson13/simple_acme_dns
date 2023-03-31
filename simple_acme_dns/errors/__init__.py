@@ -20,6 +20,12 @@ class ChallengeUnavailable(Exception):
         self.message = message
 
 
+class OrderNotFound(Exception):
+    """Error occurs when the requested ACME server does not offer the DNS-01 challenge"""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
 class InvalidKeyType(Exception):
     """Error occurs when the requested private key rtype is unsupported"""
     def __init__(self, message: str) -> None:
