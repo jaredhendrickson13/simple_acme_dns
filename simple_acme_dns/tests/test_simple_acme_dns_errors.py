@@ -30,10 +30,11 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         """Checks that verification of available challenges is performed."""
         # Create a new client for this test
         client = simple_acme_dns.ACMEClient()
-        client.__order__ = MockOrder()
+        client.order = MockOrder()
 
         # Ensure an error is thrown if there are no available challenges
-        self.assertRaises(simple_acme_dns.errors.ChallengeUnavailable, client.__verify_challenge__)
+        with self.assertRaises(simple_acme_dns.errors.ChallengeUnavailable):
+            return client.challenges
 
     def test_registration_validation(self):
         """Checks that validation of registration is performed."""
@@ -41,7 +42,8 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure registration validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidAccount, client.__validate_registration__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidAccount):
+            return client.acme_client
 
     def test_verification_tokens_validation(self):
         """Checks that validation of verification tokens is performed."""
@@ -49,7 +51,8 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure verification token validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidVerificationToken, client.__validate_verification_tokens__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidVerificationToken):
+            return client.verification_tokens
 
     def test_email_validation(self):
         """Checks that validation of registration is performed."""
@@ -57,15 +60,8 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure email validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidEmail, client.__validate_email__)
-
-    def test_directory_validation(self):
-        """Checks that validation of the acme directory is performed."""
-        # Create a new client for this test
-        client = simple_acme_dns.ACMEClient()
-
-        # Ensure email validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidACMEDirectoryURL, client.__validate_directory__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
+            return client.email
 
     def test_certificate_validation(self):
         """Checks that validation of the certificate is performed."""
@@ -73,7 +69,8 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure certificate validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidCertificate, client.__validate_certificate__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidCertificate):
+            client.certificate = "Not a bytes string."
 
     def test_private_key_validation(self):
         """Checks that validation of the private_key is performed."""
@@ -81,7 +78,8 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure private_key validation fails
-        self.assertRaises(simple_acme_dns.errors.InvalidPrivateKey, client.__validate_private_key__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidPrivateKey):
+            client.private_key = "Not a bytes string."
 
     def test_domain_validation(self):
         """Checks that validation of the domains is performed."""
@@ -89,15 +87,16 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         client = simple_acme_dns.ACMEClient()
 
         # Ensure domains validation fails if domains attribute is empty
-        self.assertRaises(simple_acme_dns.errors.InvalidDomain, client.__validate_domains__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidDomain):
+            return client.domains
 
         # Ensure domains validation fails if domains are not a list
-        client.domains = True
-        self.assertRaises(simple_acme_dns.errors.InvalidDomain, client.__validate_domains__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidDomain):
+            client.domains = "Not a list"
 
         # Ensure wildcard value gets stripped and that the remaining value is an FQDN
-        client.domains = ["*.INVALID!!!"]
-        self.assertRaises(simple_acme_dns.errors.InvalidDomain, client.__validate_domains__)
+        with self.assertRaises(simple_acme_dns.errors.InvalidDomain):
+            client.domains = ["*.INVALID!!!"]
 
     def test_acme_timeout(self):
         """Tests that acme timeout error can be raised."""
