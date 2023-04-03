@@ -27,13 +27,14 @@ class DNSQuery:
         round_robin: bool = False
     ) -> None:
         """
-        Initializes and executes our DNS query.\n
-        - :param `domain` [`str`]: the FQDN to query.\n
-        - :param `rtype` [`str`]: the DNS request type (e.g. `A`, `TXT`, `CNAME`, etc.).\n
-        - :param `nameservers` [`list`]: nameservers to query when making DNS requests.\n
-        - :param `authoritative` [`bool`]: indicate whether the authoritative nameserver for the domain should be
-        identified and used. Once identified, the `nameservers` will be replaced with the authoritative nameserver.\n
-        - :param `round_robin` [`bool`]: rotate between each nameserver instead of the default failover method.\n
+        Initializes and executes our DNS query.
+
+        Args:
+            domain (list): A list of fully qualified domain names to list in the certificate.
+            rtype (str): The DNS request type (e.g. `A`, `TXT`, `CNAME`, etc.).
+            nameservers (list): Nameservers to query when making DNS requests.
+            authoritative (bool): Use the authoritative nameserver for each domain.
+            round_robin (`bool): rotate between each nameserver instead of the default fail-over method.
         """
         self.round_robin = round_robin
         self.type = rtype.upper()
@@ -46,8 +47,10 @@ class DNSQuery:
 
     def resolve(self) -> list:
         """
-        Queries the nameservers with our configured object values.\n
-        - :return [`list`]: answer values from the request. The list will be empty if no record was found.\n
+        Queries the nameservers with our configured object values.
+
+        Returns:
+            list: A list of DNS resolution answers.
         """
         # Resolve the DNS query
         try:
@@ -66,7 +69,9 @@ class DNSQuery:
     def __get_authoritative_nameservers__(self) -> list:
         """
         Checks the domain's SOA record for the authoritative nameserver of this domain.
-        :return: (list) the authoritative nameserver(s).
+
+        Returns:
+            list: A list of authoritative nameservers
         """
         # Local variables
         nameserver = []
@@ -97,7 +102,9 @@ class DNSQuery:
     def __resolve__(domain: str, rtype: str = "A", nameservers: list = None) -> list:
         """
         Internal function-like DNS request method.
-        :return: (list) returns a list of answer values from the request.
+
+        Returns:
+             list: A list of answer values from the request.
         """
         resolver = dns.resolver.Resolver()
         resolver.nameservers = nameservers if nameservers else resolver.nameservers
@@ -109,8 +116,11 @@ class DNSQuery:
     def __filter_list__(data: list) -> list:
         """
         Filters our list properties to remove blank entries.
-        :param data: (list) the list to remove blank entries on.
-        :return: (list) the data list stripped of any blank entries.
+
+        Args:
+            data (list): The list to remove blank entries from.
+        Returns:
+            list: The data list stripped of any blank entries.
         """
         return list(filter(None, data))
 
@@ -118,8 +128,11 @@ class DNSQuery:
     def __parse_values__(answers: list) -> list:
         """
         Parses the value portion of the query answer into it's own list.
-        :param answers: (list) the answers list returned by `__resolve__()` method.
-        :return: (list) the value of each answer.
+
+        Args:
+            answers (list): the answers list returned by `__resolve__()` method.
+        Returns:
+            list: A parsed list of values for each answer.
         """
         values = []
 
