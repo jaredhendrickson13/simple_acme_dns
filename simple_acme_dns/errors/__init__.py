@@ -68,12 +68,6 @@ class InvalidDomain(Exception):
         self.message = message
 
 
-class InvalidACMEDirectoryURL(Exception):
-    """Error occurs when the ACME server's directory is missing or invalid"""
-    def __init__(self, message: str) -> None:
-        self.message = message
-
-
 class InvalidPath(Exception):
     """Error occurs when a request file path does not exist"""
     def __init__(self, message: str) -> None:
