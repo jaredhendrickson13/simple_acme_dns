@@ -422,8 +422,8 @@ class ACMEClient:
 
         # Re-initialize the ACME client and registration
         obj.net = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0')
-        obj.directory = messages.Directory.from_json(obj.net.get(obj.directory).json())
-        obj.acme_client = client.ClientV2(obj.directory, net=obj.net)
+        obj.directory_obj = messages.Directory.from_json(obj.net.get(obj.directory).json())
+        obj.acme_client = client.ClientV2(obj.directory_obj, net=obj.net)
         obj.account = obj.acme_client.query_registration(obj.account)
 
         return obj
