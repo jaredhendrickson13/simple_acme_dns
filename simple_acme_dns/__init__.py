@@ -57,7 +57,7 @@ class ACMEClient:
             generate_csr: bool = False
     ):
         """
-        Arguments:
+        Args:
             domains (list): A list of domains to request a certificate for.
             email (str): An email address to use when registering new ACME accounts.
             directory (str): The ACME directory URL to interact with.
