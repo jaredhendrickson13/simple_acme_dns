@@ -49,8 +49,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
     def tearDownClass(cls):
         """Deactivate accounts on teardown"""
         # Remove any DNS records created
-        for acme_token_tup in cls.client.verification_tokens:
-            domain = acme_token_tup[0]
+        for domain, _ in cls.client.verification_tokens.items():
             try:
                 gcloud_dns = GoogleDNSClient(name=domain, rtype="TXT", ttl=360, data="")
                 gcloud_dns.delete_record()
@@ -113,15 +112,14 @@ class TestSimpleAcmeDns(unittest.TestCase):
         # Request verification tokens
         self.client.generate_private_key_and_csr()
         self.client.new_account()
-        self.assertIsInstance(self.client.request_verification_tokens(), list)
+        self.assertIsInstance(self.client.request_verification_tokens(), dict)
 
         # Before we actually create the DNS entries, ensure DNS propagation checks fail as expected
         self.assertFalse(self.client.check_dns_propagation(timeout=5, interval=1))
 
         # Create the TXT record to verify ACME verification for each domain
-        for acme_token_tup in self.client.verification_tokens:
-            domain, token = acme_token_tup
-            gcloud_dns = GoogleDNSClient(name=domain, rtype="TXT", ttl=3600, data=token)
+        for domain, tokens in self.client.verification_tokens.items():
+            gcloud_dns = GoogleDNSClient(name=domain, rtype="TXT", ttl=3600, data=tokens)
             gcloud_dns.create_record(replace=True)
 
         # Start ACME verification and ensure DNS propagation checks work

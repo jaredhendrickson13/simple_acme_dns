@@ -25,8 +25,8 @@ client = simple_acme_dns.ACMEClient(
 )
 
 # Request the verification token for our DOMAIN. Print the challenge FQDN and it's corresponding token.
-for domain, token in client.request_verification_tokens():
-    print("{domain} --> {token}".format(domain=domain, token=token))
+for domain, tokens in client.request_verification_tokens().items():
+    print(f"{ domain } -> {tokens}")
 
 # [ !!! ADD YOUR CODE TO UPLOAD THE TOKEN TO YOUR DNS SERVER HERE; OR UPLOAD THE TOKEN MANUALLY !!! ]
 

@@ -32,8 +32,8 @@ client.new_account()
 client.generate_private_key_and_csr(key_type="rsa4096")
 
 # Request the verification token for our domains. Print each challenge FQDN and it's corresponding token.
-for domain, token in client.request_verification_tokens():
-    print("{domain} --> {token}".format(domain=domain, token=token))
+for domain, tokens in client.request_verification_tokens().items():
+    print(f"{ domain } -> {tokens}")
 
 # [ !!! ADD YOUR CODE TO UPLOAD THE TOKEN TO YOUR DNS SERVER HERE; OR UPLOAD THE TOKEN MANUALLY !!! ]
 
@@ -56,8 +56,8 @@ client.revoke_certificate()
 client.generate_private_key_and_csr(key_type="rsa2048")
 
 # Request a new verification token for our domains. Print each challenge FQDN and it's corresponding token.
-for domain, token in client.request_verification_tokens():
-    print("{domain} --> {token}".format(domain=domain, token=token))
+for domain, tokens in client.request_verification_tokens().items():
+    print(f"{ domain } -> {tokens}")
 
 # [ !!! ADD YOUR CODE TO UPLOAD THE NEW TOKENs TO YOUR DNS SERVER HERE; OR UPLOAD THE TOKEN MANUALLY !!! ]
 
