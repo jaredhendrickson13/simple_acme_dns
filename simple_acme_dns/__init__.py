@@ -290,7 +290,7 @@ class ACMEClient:
             >>> client.new_account()
         """
         # Generate a new RSA2048 account key
-        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=(default_backend()))
+        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
@@ -596,7 +596,7 @@ class ACMEClient:
         # If no challenges were found, throw an error
         if not challs:
             msg = f"ACME server at '{self.directory}' does not support DNS-01 challenge."
-            raise errors.ChallengeUnavailable(msg.format(directory=(str(self.directory))))
+            raise errors.ChallengeUnavailable(msg.format(directory=str(self.directory)))
 
         return challs
 
