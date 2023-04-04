@@ -20,6 +20,18 @@ class ChallengeUnavailable(Exception):
         self.message = message
 
 
+class OrderNotFound(Exception):
+    """Error occurs when the requested ACME server does not offer the DNS-01 challenge"""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
+class InvalidCSR(Exception):
+    """Error occurs when the requested CSR rtype is unsupported"""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
 class InvalidKeyType(Exception):
     """Error occurs when the requested private key rtype is unsupported"""
     def __init__(self, message: str) -> None:
@@ -58,12 +70,6 @@ class InvalidVerificationToken(Exception):
 
 class InvalidDomain(Exception):
     """Error occurs when requests are made to the ACME server without a domains"""
-    def __init__(self, message: str) -> None:
-        self.message = message
-
-
-class InvalidACMEDirectoryURL(Exception):
-    """Error occurs when the ACME server's directory is missing or invalid"""
     def __init__(self, message: str) -> None:
         self.message = message
 
