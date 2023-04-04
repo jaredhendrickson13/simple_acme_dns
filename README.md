@@ -18,6 +18,3 @@ pip install simple_acme_dns
 Refer to the [simple_acme_dns documentation pages](https://jaredhendrickson13.github.io/simple_acme_dns/) for the most 
 up-to-date documentation. Example scripts can also be found on 
 [GitHub](https://github.com/jaredhendrickson13/simple_acme_dns/tree/master/examples).
-
-### Basic Example
-https://github.com/jaredhendrickson13/simple_acme_dns/blob/master/examples/example_basic.py#L1-L43
