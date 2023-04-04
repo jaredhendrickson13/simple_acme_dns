@@ -49,8 +49,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
     def tearDownClass(cls):
         """Deactivate accounts on teardown"""
         # Remove any DNS records created
-        for acme_token_tup in cls.client.verification_tokens:
-            domain = acme_token_tup[0]
+        for domain, tokens in cls.client.verification_tokens.items():
             try:
                 gcloud_dns = GoogleDNSClient(name=domain, rtype="TXT", ttl=360, data="")
                 gcloud_dns.delete_record()
