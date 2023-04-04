@@ -30,9 +30,13 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         """Checks that verification of available challenges is performed."""
         # Create a new client for this test
         client = simple_acme_dns.ACMEClient()
-        client.order = MockOrder()
+
+        # Ensure an error is thrown if challenges are requested before an order is placed
+        with self.assertRaises(simple_acme_dns.errors.OrderNotFound):
+            return client.challenges
 
         # Ensure an error is thrown if there are no available challenges
+        client.order = MockOrder()
         with self.assertRaises(simple_acme_dns.errors.ChallengeUnavailable):
             return client.challenges
 
@@ -44,6 +48,10 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         # Ensure registration validation fails
         with self.assertRaises(simple_acme_dns.errors.InvalidAccount):
             return client.acme_client
+
+        # Ensure 'acme_client' cannot be assigned a value unless it is an acme.client.ClientV2 object.
+        with self.assertRaises(simple_acme_dns.errors.InvalidAccount):
+            client.acme_client = "Not an acme.client.ClientV2 object"
 
     def test_verification_tokens_validation(self):
         """Checks that validation of verification tokens is performed."""
@@ -59,9 +67,13 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         # Create a new client for this test
         client = simple_acme_dns.ACMEClient()
 
-        # Ensure email validation fails
+        # Ensure email validation fails if email is not set
         with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
             return client.email
+
+        # Ensure email validation fails if email is set to a non-email address value
+        with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
+            client.email = "Not a valid email address!"
 
     def test_certificate_validation(self):
         """Checks that validation of the certificate is performed."""
