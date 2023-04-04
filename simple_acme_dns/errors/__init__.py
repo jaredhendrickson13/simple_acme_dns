@@ -26,6 +26,12 @@ class OrderNotFound(Exception):
         self.message = message
 
 
+class InvalidCSR(Exception):
+    """Error occurs when the requested CSR rtype is unsupported"""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
 class InvalidKeyType(Exception):
     """Error occurs when the requested private key rtype is unsupported"""
     def __init__(self, message: str) -> None:

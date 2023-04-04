@@ -75,6 +75,19 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
             client.email = "Not a valid email address!"
 
+    def test_csr_validation(self):
+        """Checks that validation of the certificate is performed."""
+        # Create a new client for this test
+        client = simple_acme_dns.ACMEClient()
+
+        # Ensure CSR raises an error when it is referrenced before a value is assigned
+        with self.assertRaises(simple_acme_dns.errors.InvalidCSR):
+            return client.csr
+
+        # Ensure CSR cannot be assigned a non-bytes type value
+        with self.assertRaises(simple_acme_dns.errors.InvalidCSR):
+            client.csr = "Not a bytes string."
+
     def test_certificate_validation(self):
         """Checks that validation of the certificate is performed."""
         # Create a new client for this test

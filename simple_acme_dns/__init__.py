@@ -737,6 +737,40 @@ class ACMEClient:
         self._domains = value
 
     @property
+    def csr(self) -> bytes:
+        """
+        Getter for the `csr` property. This checks that a CSR is already set whenever it's referenced.
+
+        Returns:
+            bytes: The current PEM encoded CSR data bytes-string if present.
+
+        Raises:
+            simple_acme_dns.errors.InvalidCSR: When the `csr` value has not been set yet.
+        """
+        # Throw an error if the CSR is referenced before it is set
+        if not self._csr:
+            raise errors.InvalidCSR("CSR value must be set before referencing 'csr'.")
+
+        return self._csr
+
+    @csr.setter
+    def csr(self, value: bytes) -> None:
+        """
+        Setter for the 'csr' property. This ensures the set value is a bytes-string.
+
+        Args:
+            value (bytes): The CSR value being set.
+
+        Raises:
+            simple_acme_dns.errors.InvalidCSR: When the `csr` value being set is not of type `bytes`.
+        """
+        # Convert string assignments to bytes
+        if not isinstance(value, bytes):
+            raise errors.InvalidCSR("CSR must be type 'bytes'.")
+
+        self._csr = value
+
+    @property
     def certificate(self) -> bytes:
         """
         Getter for the `certificate` property. This checks that a certificate is already set whenever it's referenced.
