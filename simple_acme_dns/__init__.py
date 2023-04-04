@@ -197,10 +197,10 @@ class ACMEClient:
 
         Examples:
             >>> client.request_verification_tokens()
-            [
-                ('_acme-challenge.test1.example.com', 'moY32lkdsZ3VWHM1mdM...'),
-                ('_acme-challenge.test2.example.com', 'asldfkjslweietj23_b...')
-            ]
+            {
+                "_acme-challenge.test1.example.com": ["moY32lkdsZ3VWHM1mdM..."],
+                "_acme-challenge.test2.example.com": ["asldfkjslweietj23_b...", "nMIIEvAIBA2-212_w..."]
+            }
         """
         # Variables
         verification_tokens = {}
