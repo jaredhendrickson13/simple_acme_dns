@@ -294,7 +294,7 @@ class ACMEClient:
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
-        self.net = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/1.0.0')
+        self.net = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/v2')
         self.directory_obj = messages.Directory.from_json(self.net.get(self.directory).json())
         self.acme_client = client.ClientV2(self.directory_obj, net=self.net)
 
