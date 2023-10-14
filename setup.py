@@ -39,7 +39,7 @@ setup(
     description="A Python ACME client for the DNS-01 challenge",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    version="2.0.0",
+    version="3.0.0",
     packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=read_requirements(),
     classifiers=[
