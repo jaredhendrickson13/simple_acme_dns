@@ -1,4 +1,4 @@
 google-cloud-dns~=0.34.2
 pylint~=3.0.2
-coverage~=7.3.2
+coverage~=7.4.0
 pdoc3~=0.10.0
