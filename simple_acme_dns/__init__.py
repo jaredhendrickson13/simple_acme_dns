@@ -346,7 +346,7 @@ class ACMEClient:
             'account': self.account.to_json(),
             'account_key': self.account_key.json_dumps(),
             'directory': self.directory,
-            'domains': self.domains,
+            'domains': self._domains,
             'certificate': self.certificate.decode() if save_certificate else '',
             'private_key': self.private_key.decode() if save_private_key else ''
         }
