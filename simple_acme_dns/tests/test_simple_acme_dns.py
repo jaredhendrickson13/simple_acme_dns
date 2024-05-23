@@ -202,6 +202,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
     def test_email_property_when_email_is_not_set(self):
         """Checks that the email property raises an error when not set."""
         with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
+            self.client._email = None
             return self.client.email
 
 
