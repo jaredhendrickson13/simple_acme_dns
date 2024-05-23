@@ -194,6 +194,16 @@ class TestSimpleAcmeDns(unittest.TestCase):
         client.account_path = "INVALID_FILE.json"
         self.assertIsNone(client.deactivate_account(delete=True))
 
+    def test_email_property_when_email_is_set(self):
+        """Checks that the email property is set correctly."""
+        self.client._email = "test@example.com"
+        self.assertEqual(self.client.email, "test@example.com")
+
+    def test_email_property_when_email_is_not_set(self):
+        """Checks that the email property raises an error when not set."""
+        with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
+            return self.client.email
+
 
 if __name__ == '__main__':
     unittest.main()
