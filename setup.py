@@ -33,13 +33,13 @@ def read_requirements():
 setup(
     name='simple_acme_dns',
     author='Jared Hendrickson',
-    author_email='jaredhendrickson13@gmail.com',
+    author_email='github@jaredhendrickson.com',
     url="https://github.com/jaredhendrickson13/simple_acme_dns",
     license="Apache-2.0",
     description="A Python ACME client for the DNS-01 challenge",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    version="3.0.0",
+    version="3.1.0",
     packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=read_requirements(),
     classifiers=[
