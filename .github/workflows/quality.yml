@@ -52,31 +52,3 @@ jobs:
         run: |
           python3 -m coverage run --module unittest simple_acme_dns/tests/test_*
           python3 -m coverage report --show-missing --fail-under 100
-
-  check_codeql:
-    runs-on: ubuntu-latest
-    needs: [check_coverage]
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'python' ]
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
