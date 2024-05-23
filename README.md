@@ -1,8 +1,7 @@
 simple_acme_dns
 ================
-[![Coverage](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/coverage.yml)
-[![PyPI](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pypi.yml)
-[![PyLint](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/pylint.yml)
+[![Quality](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/quality.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/quality.yml)
+[![Release](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/release.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/release.yml)
 [![CodeQL](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml/badge.svg)](https://github.com/jaredhendrickson13/simple_acme_dns/actions/workflows/codeql.yml)
 
 **simple_acme_dns** is a Python ACME client wrapper specifically tailored to the DNS-01 challenge. This makes it easy to manage ACME 
