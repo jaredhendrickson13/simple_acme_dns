@@ -299,7 +299,7 @@ class ACMEClient:
         self.acme_client = client.ClientV2(self.directory_obj, net=self.net)
 
         # Complete registration
-        registration = messages.NewRegistration.from_data(email=self.email, terms_of_service_agreed=True)
+        registration = messages.NewRegistration.from_data(email=self._email, terms_of_service_agreed=True)
         self.account = self.acme_client.new_account(registration)
 
     def deactivate_account(self, delete: bool = True) -> None:
@@ -416,7 +416,8 @@ class ACMEClient:
         obj.domains = acct_data.get('domains', [])
         obj.certificate = acct_data.get('certificate', '').encode()
         obj.private_key = acct_data.get('private_key', '').encode()
-        obj.email = acct_data['account']['body']['contact'][0].replace('mailto:', '')
+        if acct_data['account']['body']['contact']:
+            obj.email = acct_data['account']['body']['contact'][0].replace('mailto:', '')
         obj.account = messages.RegistrationResource.json_loads(json.dumps(acct_data['account']))
         obj.account_key = jose.JWKRSA.json_loads(acct_data['account_key'])
 
