@@ -11,3 +11,7 @@ updates:
       interval: "monthly"
     reviewers:
       - "jaredhendrickson13"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
