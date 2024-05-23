@@ -1,28 +1,45 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Documentation
+name: Release
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["master"]
+  release:
+    types: [published]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
+# Allow one concurrent release
 concurrency:
-  group: "pages"
+  group: "release"
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  release_pypi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+
+    - name: Build package
+      run: python -m build
+
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+  release_docs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -30,18 +47,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
       - name: Setup Pages
         uses: actions/configure-pages@v1
+        
       - name: Build documentation
         run: |
           python -m pip install --upgrade pip
           python3 -m pip install -r requirements-dev.txt
           python3 -m pip install .
           pdoc3 simple_acme_dns --html --force --output-dir docs/html
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: './docs/html/simple_acme_dns'
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@main
