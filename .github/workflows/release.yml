@@ -59,7 +59,7 @@ jobs:
           pdoc3 simple_acme_dns --html --force --output-dir docs/html
           
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './docs/html/simple_acme_dns'
           
