@@ -48,7 +48,18 @@ jobs:
           python3 -m pip install .
           python3 -m pip install -r requirements-dev.txt
 
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.tag_name')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Start Pebble server
+        run: docker-compose -f simple_acme_dns/tests/docker-compose.yml up -d
+
       - name: Test simple_acme_dns package to ensure 100% coverage
+        env:
+          ACME_DIRECTORY: 'https://localhost:14000/dir'
         run: |
           python3 -m coverage run --module unittest simple_acme_dns/tests/test_*
           python3 -m coverage report --show-missing --fail-under 100
