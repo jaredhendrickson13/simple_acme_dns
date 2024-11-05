@@ -14,6 +14,7 @@
 """Tests primary functionality of the simple_acme_dns package."""
 import os
 import random
+import time
 import unittest
 
 import acme.messages
@@ -25,7 +26,7 @@ from simple_acme_dns.tests.tools import GoogleDNSClient, is_csr, is_cert, is_jso
 BASE_DOMAIN = "testing.jaredhendrickson.com"
 TEST_DOMAINS = [f"{random.randint(10000, 99999)}.simple-acme-dns.{BASE_DOMAIN}"]
 TEST_EMAIL = f"simple-acme-dns@{BASE_DOMAIN}"
-TEST_DIRECTORY = "https://acme-staging-v02.api.letsencrypt.org/directory"
+TEST_DIRECTORY = os.environ.get("ACME_DIRECTORY", "https://acme-staging-v02.api.letsencrypt.org/directory")
 TEST_NAMESERVERS = ["8.8.8.8", "1.1.1.1"]
 unittest.TestLoader.sortTestMethodsUsing = None    # Ensure tests run in order
 
@@ -42,7 +43,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
             domains=TEST_DOMAINS,
             email=TEST_EMAIL,
             directory=TEST_DIRECTORY,
-            nameservers=TEST_NAMESERVERS
+            nameservers=TEST_NAMESERVERS,
+            verify_ssl=False
     )
 
     @classmethod
@@ -77,7 +79,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
 
     def test_account_enrollment(self):
         """Test to ensure ACME accounts are successfully registered."""
-        self.client.new_account()
+        self.client.new_account(verify_ssl=False)
         self.assertIsNotNone(self.client.account)
         self.assertIsNotNone(self.client.account_key)
         self.assertTrue(is_json(self.client.export_account()))
@@ -90,7 +92,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
             directory=TEST_DIRECTORY,
             nameservers=TEST_NAMESERVERS,
             new_account=True,
-            generate_csr=True
+            generate_csr=True,
+            verify_ssl=False
         )
 
         # Ensure there is an account enrolled and a CSR/private key created
@@ -111,7 +114,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
         """Test to ensure ACME verification works and a certificate is obtained."""
         # Request verification tokens
         self.client.generate_private_key_and_csr()
-        self.client.new_account()
+        self.client.new_account(verify_ssl=False)
         self.assertIsInstance(self.client.request_verification_tokens(), dict)
 
         # Before we actually create the DNS entries, ensure DNS propagation checks fail as expected
@@ -133,6 +136,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
         )
 
         # Request the certificates and ensure a certificate is received
+        time.sleep(15)  # Wait for DNS to propagate
         self.assertTrue(is_cert(self.client.request_certificate()))
 
     def test_account_exports(self):
@@ -189,7 +193,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
             directory=TEST_DIRECTORY,
             nameservers=TEST_NAMESERVERS,
             new_account=True,
-            generate_csr=True
+            generate_csr=True,
+            verify_ssl=False
         )
         client.account_path = "INVALID_FILE.json"
         self.assertIsNone(client.deactivate_account(delete=True))
@@ -205,7 +210,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
             client = simple_acme_dns.ACMEClient(
                 domains=TEST_DOMAINS,
                 directory=TEST_DIRECTORY,
-                nameservers=TEST_NAMESERVERS
+                nameservers=TEST_NAMESERVERS,
+                verify_ssl=False
             )
             return client.email
 
