@@ -35,6 +35,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 from . import errors
 from . import tools
 
+
 # Constants and Variables
 DNS_LABEL = '_acme-challenge'
 __pdoc__ = {"tests": False}    # Excludes 'tests' submodule from documentation
@@ -54,7 +55,8 @@ class ACMEClient:
             directory: str = "https://acme-staging-v02.api.letsencrypt.org/directory",
             nameservers: list = None,
             new_account: bool = False,
-            generate_csr: bool = False
+            generate_csr: bool = False,
+            verify_ssl: bool = True
     ):
         """
         Args:
@@ -64,6 +66,8 @@ class ACMEClient:
             nameservers (list): A list of DNS server hosts to query when checking DNS propagation.
             new_account (bool): Automatically create a new ACME account upon creation.
             generate_csr (bool): Automatically generate a new private key and CSR upon creation.
+            verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests. This only applies
+                when creating a new account.
 
         Examples:
             >>> import simple_acme_dns
@@ -97,7 +101,7 @@ class ACMEClient:
 
         # Automatically create a new account if requested
         if new_account:
-            self.new_account()
+            self.new_account(verify_ssl=verify_ssl)
         # Automatically create a new private key and CSR
         if generate_csr:
             self.generate_private_key_and_csr()
@@ -281,10 +285,13 @@ class ACMEClient:
         cert_obj = jose.ComparableX509(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, self.certificate))
         self.acme_client.revoke(cert_obj, reason)
 
-    def new_account(self) -> None:
+    def new_account(self, verify_ssl=True) -> None:
         """
         Registers a new ACME account at the set ACME `directory` URL. By running this method, you are agreeing to the
         ACME servers terms of use.
+
+        Args:
+            verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests.
 
         Examples:
             >>> client.new_account()
@@ -294,7 +301,7 @@ class ACMEClient:
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
-        self.net = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/v2')
+        self.net = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/v2', verify_ssl=verify_ssl)
         self.directory_obj = messages.Directory.from_json(self.net.get(self.directory).json())
         self.acme_client = client.ClientV2(self.directory_obj, net=self.net)
 
@@ -346,6 +353,7 @@ class ACMEClient:
             'account': self.account.to_json(),
             'account_key': self.account_key.json_dumps(),
             'directory': self.directory,
+            'verify_ssl': self.net.verify_ssl,
             'domains': self._domains,
             'certificate': self.certificate.decode() if save_certificate else '',
             'private_key': self.private_key.decode() if save_private_key else ''
@@ -412,6 +420,7 @@ class ACMEClient:
         obj = ACMEClient()
 
         # Format the serialized data back into the object
+        verify_ssl = acct_data.get('verify_ssl', True)
         obj.directory = acct_data.get('directory', None)
         obj.domains = acct_data.get('domains', [])
         obj.certificate = acct_data.get('certificate', '').encode()
@@ -422,7 +431,7 @@ class ACMEClient:
         obj.account_key = jose.JWKRSA.json_loads(acct_data['account_key'])
 
         # Re-initialize the ACME client and registration
-        obj.net = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0')
+        obj.net = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0', verify_ssl=verify_ssl)
         obj.directory_obj = messages.Directory.from_json(obj.net.get(obj.directory).json())
         obj.acme_client = client.ClientV2(obj.directory_obj, net=obj.net)
         obj.account = obj.acme_client.query_registration(obj.account)
