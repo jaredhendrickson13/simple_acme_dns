@@ -1,0 +1,27 @@
+# Docker compose file for setting up a Pebble ACME and challenge server for testing
+version: "3"
+services:
+  pebble:
+    image: ghcr.io/letsencrypt/pebble:latest
+    command: -config test/config/pebble-config.json -strict -dnsserver 1.1.1.1:53
+    ports:
+      - '14000:14000' # HTTPS ACME API
+      - '15000:15000' # HTTPS Management API
+    networks:
+      acmenet:
+        ipv4_address: 10.30.50.2
+  challtestsrv:
+    image: ghcr.io/letsencrypt/pebble-challtestsrv:latest
+    command: -defaultIPv6 "" -defaultIPv4 10.30.50.3
+    ports:
+      - 8055:8055 # HTTP Management API
+    networks:
+      acmenet:
+        ipv4_address: 10.30.50.3
+networks:
+  acmenet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.30.50.0/24
