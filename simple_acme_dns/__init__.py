@@ -46,7 +46,7 @@ class ACMEClient:
     A basic ACME client object to interface with a CA using the ACME DNS-01 challenge.
     """
     # This package is all about user simplicity, keeping all items contained to one class supports this.
-    # pylint: disable=too-many-instance-attributes,too-many-public-methods
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods,too-many-positional-arguments
 
     def __init__(
             self,

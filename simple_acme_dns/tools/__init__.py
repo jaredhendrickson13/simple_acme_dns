@@ -17,6 +17,7 @@ import dns.resolver
 
 class DNSQuery:
     """A basic class to make DNS queries"""
+    # pylint: disable=too-many-positional-arguments
 
     def __init__(
         self,
