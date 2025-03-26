@@ -292,7 +292,8 @@ class ACMEClient:
 
         Args:
             verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests.
-
+            user_agent (str): Configures the user agent that is sent when making requests to the ACME server.
+            
         Examples:
             >>> client.new_account()
         """
