@@ -285,14 +285,15 @@ class ACMEClient:
         cert_obj = jose.ComparableX509(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, self.certificate))
         self.acme_client.revoke(cert_obj, reason)
 
-    def new_account(self, verify_ssl=True) -> None:
+    def new_account(self, verify_ssl=True, user_agent='simple_acme_dns/v2') -> None:
         """
         Registers a new ACME account at the set ACME `directory` URL. By running this method, you are agreeing to the
         ACME servers terms of use.
 
         Args:
             verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests.
-
+            user_agent (str): Configures the user agent that is sent when making requests to the ACME server.
+            
         Examples:
             >>> client.new_account()
         """
@@ -301,7 +302,7 @@ class ACMEClient:
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
-        self.net = client.ClientNetwork(self.account_key, user_agent='simple_acme_dns/v2', verify_ssl=verify_ssl)
+        self.net = client.ClientNetwork(self.account_key, user_agent=user_agent, verify_ssl=verify_ssl)
         self.directory_obj = messages.Directory.from_json(self.net.get(self.directory).json())
         self.acme_client = client.ClientV2(self.directory_obj, net=self.net)
 
@@ -421,6 +422,7 @@ class ACMEClient:
 
         # Format the serialized data back into the object
         verify_ssl = acct_data.get('verify_ssl', True)
+        user_agent = acct_data.get('user_agent', 'simple_acme_dns/v2')
         obj.directory = acct_data.get('directory', None)
         obj.domains = acct_data.get('domains', [])
         obj.certificate = acct_data.get('certificate', '').encode()
@@ -431,7 +433,7 @@ class ACMEClient:
         obj.account_key = jose.JWKRSA.json_loads(acct_data['account_key'])
 
         # Re-initialize the ACME client and registration
-        obj.net = client.ClientNetwork(obj.account_key, user_agent='simple_acme_dns/1.0.0', verify_ssl=verify_ssl)
+        obj.net = client.ClientNetwork(obj.account_key, user_agent=user_agent, verify_ssl=verify_ssl)
         obj.directory_obj = messages.Directory.from_json(obj.net.get(obj.directory).json())
         obj.acme_client = client.ClientV2(obj.directory_obj, net=obj.net)
         obj.account = obj.acme_client.query_registration(obj.account)
