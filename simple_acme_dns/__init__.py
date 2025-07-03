@@ -400,6 +400,7 @@ class ACMEClient:
             "account": self.account.to_json(),
             "account_key": self.account_key.json_dumps(),
             "directory": self.directory,
+            "profile": self.profile,
             "verify_ssl": self.net.verify_ssl,
             "domains": self._domains,
             "certificate": self.certificate.decode() if save_certificate else "",
@@ -474,6 +475,7 @@ class ACMEClient:
         verify_ssl = acct_data.get("verify_ssl", True)
         user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
         obj.directory = acct_data.get("directory", None)
+        obj._profile = acct_data.get("profile", None)
         obj.domains = acct_data.get("domains", [])
         obj.certificate = acct_data.get("certificate", "").encode()
         obj.private_key = acct_data.get("private_key", "").encode()
