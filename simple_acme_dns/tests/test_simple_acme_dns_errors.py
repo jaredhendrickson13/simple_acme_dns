@@ -133,6 +133,7 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
             domains=simple_acme_dns.tests.TEST_DOMAINS,
             directory=simple_acme_dns.tests.TEST_DIRECTORY,
             new_account=True,
+            verify_ssl=False,
         )
 
         # Ensure profile cannot be set to a non-supported profile
