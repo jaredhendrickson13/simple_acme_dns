@@ -21,13 +21,13 @@ import json
 import pathlib
 import time
 
-import OpenSSL
 import josepy as jose
 import validators
 from acme import challenges
 from acme import client
 from acme import crypto_util
 from acme import messages
+from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
@@ -156,14 +156,20 @@ class ACMEClient:
             )
         # Generate a RSA2048 private key
         elif key_type == 'rsa2048':
-            key = OpenSSL.crypto.PKey()
-            key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
-            self.private_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
+            key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+            self.private_key = key.private_bytes(
+                encoding=Encoding.PEM,
+                format=PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=NoEncryption()
+            )
         # Generate a RSA4096 private key
         elif key_type == 'rsa4096':
-            key = OpenSSL.crypto.PKey()
-            key.generate_key(OpenSSL.crypto.TYPE_RSA, 4096)
-            self.private_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
+            key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+            self.private_key = key.private_bytes(
+                encoding=Encoding.PEM,
+                format=PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=NoEncryption()
+            )
         # Otherwise, the requested key type is not supported. Throw an error
         else:
             options = ['ec256', 'ec384', 'rsa2048', 'rsa4096']
@@ -282,7 +288,7 @@ class ACMEClient:
             >>> client.revoke_certificate()
         """
         # Load the certificate crypto object and request revocation from the ACME server
-        cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, self.certificate)
+        cert_obj = x509.load_pem_x509_certificate(self.certificate)
         self.acme_client.revoke(cert_obj, reason)
 
     def new_account(self, verify_ssl=True, user_agent='simple_acme_dns/v2') -> None:
