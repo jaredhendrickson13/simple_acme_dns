@@ -11,8 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""DNS tools to assist ACME verification."""
+"""Module containing tools needed for the simple_acme_dns package."""
 import dns.resolver
+from importlib.metadata import version, PackageNotFoundError
+
+
+def get_package_version() -> str:
+    """
+    Returns the current package version installed on the system
+
+    Returns:
+        str: The current package version or "unknown" if not installed.
+    """
+    try:
+        return version("simple_acme_dns")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 class DNSQuery:

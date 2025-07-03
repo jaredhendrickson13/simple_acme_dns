@@ -42,8 +42,10 @@ from . import tools
 
 
 # Constants and Variables
-DNS_LABEL = "_acme-challenge"
 __pdoc__ = {"tests": False}  # Excludes 'tests' submodule from documentation
+__version__ = tools.get_package_version()
+DNS_LABEL = "_acme-challenge"
+DEFAULT_USER_AGENT = f"simple_acme_dns/{__version__})"
 
 
 class ACMEClient:
@@ -470,7 +472,7 @@ class ACMEClient:
 
         # Format the serialized data back into the object
         verify_ssl = acct_data.get("verify_ssl", True)
-        user_agent = acct_data.get("user_agent", "simple_acme_dns/v2")
+        user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
         obj.directory = acct_data.get("directory", None)
         obj.domains = acct_data.get("domains", [])
         obj.certificate = acct_data.get("certificate", "").encode()
