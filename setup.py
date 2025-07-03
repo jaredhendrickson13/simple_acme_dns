@@ -41,7 +41,7 @@ setup(
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     version=os.environ.get("SIMPLE_ACME_DNS_VERSION", "0.0.0"),
-    packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
+    packages=["simple_acme_dns"],
     install_requires=read_requirements(),
     classifiers=[
         "Programming Language :: Python :: 3",
