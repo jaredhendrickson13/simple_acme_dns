@@ -9,8 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "monthly"
-    reviewers:
-      - "jaredhendrickson13"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

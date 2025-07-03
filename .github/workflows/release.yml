@@ -30,6 +30,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
 
+    - name: Set SIMPLE_ACME_DNS_VERSION environment variable
+      shell: bash
+      run: |
+        VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+        echo "SIMPLE_ACME_DNS_VERSION=$VERSION" >> $GITHUB_ENV
+
     - name: Build package
       run: python -m build
 

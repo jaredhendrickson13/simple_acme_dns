@@ -1,4 +1,4 @@
-# Copyright 2023 Jared Hendrickson
+# Copyright 2025 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""DNS tools to assist ACME verification."""
+"""Module containing tools needed for the simple_acme_dns package."""
+from importlib.metadata import version, PackageNotFoundError
+
 import dns.resolver
+
+
+def get_package_version(name: str) -> str:
+    """
+    Returns the current package version installed on the system
+
+    Args:
+        name (str): The name of the package to check.
+
+    Returns:
+        str: The current package version or "unknown" if not installed.
+    """
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return "unknown"
 
 
 class DNSQuery:
     """A basic class to make DNS queries"""
+
     # pylint: disable=too-many-positional-arguments
 
     def __init__(
@@ -25,7 +44,7 @@ class DNSQuery:
         rtype: str = "A",
         nameservers: list = None,
         authoritative: bool = False,
-        round_robin: bool = False
+        round_robin: bool = False,
     ) -> None:
         """
         Initializes and executes our DNS query.
@@ -40,8 +59,14 @@ class DNSQuery:
         self.round_robin = round_robin
         self.type = rtype.upper()
         self.domain = domain
-        self.nameservers = nameservers if nameservers else dns.resolver.Resolver().nameservers
-        self.nameservers = self.__get_authoritative_nameservers__() if authoritative else self.nameservers
+        self.nameservers = (
+            nameservers if nameservers else dns.resolver.Resolver().nameservers
+        )
+        self.nameservers = (
+            self.__get_authoritative_nameservers__()
+            if authoritative
+            else self.nameservers
+        )
         self.values = []
         self.answers = []
         self.last_nameserver = ""
@@ -55,7 +80,9 @@ class DNSQuery:
         """
         # Resolve the DNS query
         try:
-            self.answers = DNSQuery.__resolve__(self.domain, rtype=self.type, nameservers=self.nameservers)
+            self.answers = DNSQuery.__resolve__(
+                self.domain, rtype=self.type, nameservers=self.nameservers
+            )
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
             self.answers = []
 
@@ -85,7 +112,9 @@ class DNSQuery:
 
             # Get our SOA record values for this domain and remove the trailing dot from each
             try:
-                nameserver = self.__parse_values__(self.__resolve__(domain, rtype="SOA", nameservers=self.nameservers))
+                nameserver = self.__parse_values__(
+                    self.__resolve__(domain, rtype="SOA", nameservers=self.nameservers)
+                )
                 break
             except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
                 domain_sections.pop(0)
@@ -95,7 +124,9 @@ class DNSQuery:
         nameserver = nameserver[0].split("SOA ")
         nameserver = nameserver[0].split(" ")[0]
         nameserver = nameserver[:-1]
-        nameserver = self.__parse_values__(self.__resolve__(nameserver, rtype="A", nameservers=self.nameservers))
+        nameserver = self.__parse_values__(
+            self.__resolve__(nameserver, rtype="A", nameservers=self.nameservers)
+        )
 
         return nameserver
 
@@ -111,7 +142,9 @@ class DNSQuery:
         resolver.nameservers = nameservers if nameservers else resolver.nameservers
 
         # Resolve the DNS query
-        return DNSQuery.__filter_list__(resolver.resolve(domain, rtype).response.answer[0].to_text().split("\n"))
+        return DNSQuery.__filter_list__(
+            resolver.resolve(domain, rtype).response.answer[0].to_text().split("\n")
+        )
 
     @staticmethod
     def __filter_list__(data: list) -> list:
@@ -141,8 +174,8 @@ class DNSQuery:
         for answer in answers:
             # Save the fourth space separated item as the
             value = answer.split(" ", 4)[-1]
-            value = value.replace("\"", "", 1) if value.startswith("\"") else value
-            value = value.replace("\"", "", -1) if value.endswith("\"") else value
+            value = value.replace('"', "", 1) if value.startswith('"') else value
+            value = value.replace('"', "", -1) if value.endswith('"') else value
             values.append(value)
 
         return DNSQuery.__filter_list__(values)

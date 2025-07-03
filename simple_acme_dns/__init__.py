@@ -1,4 +1,4 @@
-# Copyright 2023 Jared Hendrickson
+# Copyright 2025 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import datetime
 import json
 import pathlib
 import time
+from typing import Union
 
 import josepy as jose
 import validators
@@ -30,42 +31,53 @@ from acme import messages
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    PrivateFormat,
+    NoEncryption,
+)
 
 from . import errors
 from . import tools
 
-
 # Constants and Variables
-DNS_LABEL = '_acme-challenge'
-__pdoc__ = {"tests": False}    # Excludes 'tests' submodule from documentation
+__pdoc__ = {"tests": False}  # Excludes 'tests' submodule from documentation
+__version__ = tools.get_package_version("simple_acme_dns")
+DNS_LABEL = "_acme-challenge"
+DEFAULT_USER_AGENT = f"simple_acme_dns/{__version__}"
 
 
 class ACMEClient:
     """
     A basic ACME client object to interface with a CA using the ACME DNS-01 challenge.
     """
+
     # This package is all about user simplicity, keeping all items contained to one class supports this.
     # pylint: disable=too-many-instance-attributes,too-many-public-methods,too-many-positional-arguments
 
+    # pylint: disable=too-many-arguments
     def __init__(
-            self,
-            domains: list = None,
-            email: str = None,
-            directory: str = "https://acme-staging-v02.api.letsencrypt.org/directory",
-            nameservers: list = None,
-            new_account: bool = False,
-            generate_csr: bool = False,
-            verify_ssl: bool = True
+        self,
+        domains: list = None,
+        email: Union[str, None] = None,
+        directory: str = "https://acme-staging-v02.api.letsencrypt.org/directory",
+        profile: Union[str, None] = None,
+        nameservers: list = None,
+        new_account: bool = False,
+        generate_csr: bool = False,
+        user_agent: str = DEFAULT_USER_AGENT,
+        verify_ssl: bool = True,
     ):
         """
         Args:
             domains (list): A list of domains to request a certificate for.
-            email (str): An email address to use when registering new ACME accounts.
+            email (Union[str, None]): An email address to use when registering new ACME accounts.
             directory (str): The ACME directory URL to interact with.
+            profile (Union[str, None]): The ACME profile to use. Use None to omit profile selection.
             nameservers (list): A list of DNS server hosts to query when checking DNS propagation.
             new_account (bool): Automatically create a new ACME account upon creation.
             generate_csr (bool): Automatically generate a new private key and CSR upon creation.
+            user_agent (str): The user agent to use when making requests to the ACME server.
             verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests. This only applies
                 when creating a new account.
 
@@ -80,9 +92,10 @@ class ACMEClient:
             ...     generate_csr=True
             ... )
         """
-        self.csr = ''.encode()
+        self.csr = "".encode()
         self.directory = directory
         self.directory_obj = None
+        self._user_agent = user_agent
         self.account_key = None
         self.account = None
         self.account_path = None
@@ -94,14 +107,15 @@ class ACMEClient:
         self.answers = []
         self._domains = domains if domains else []
         self._email = email
-        self._certificate = ''.encode()
-        self._private_key = ''.encode()
+        self._certificate = "".encode()
+        self._private_key = "".encode()
+        self._profile = profile
         self._acme_client = None
         self._verification_tokens = {}
 
         # Automatically create a new account if requested
         if new_account:
-            self.new_account(verify_ssl=verify_ssl)
+            self.new_account(verify_ssl=verify_ssl, user_agent=user_agent)
         # Automatically create a new private key and CSR
         if generate_csr:
             self.generate_private_key_and_csr()
@@ -121,7 +135,7 @@ class ACMEClient:
         self.csr = crypto_util.make_csr(self.private_key, self.domains)
         return self.csr
 
-    def generate_private_key(self, key_type: str = 'ec256') -> bytes:
+    def generate_private_key(self, key_type: str = "ec256") -> bytes:
         """
         Generates a new RSA or EC private key.
 
@@ -140,44 +154,49 @@ class ACMEClient:
             b'-----BEGIN EC PRIVATE KEY-----\\nMIGkAgEBBDAZRFNLcQdVJmLh42p8F4D92...'
         """
         # Generate a EC256 private key
-        if key_type == 'ec256':
+        if key_type == "ec256":
             key = ec.generate_private_key(ec.SECP256R1(), default_backend())
             self.private_key = key.private_bytes(
                 encoding=Encoding.PEM,
                 format=PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=NoEncryption())
+                encryption_algorithm=NoEncryption(),
+            )
         # Generate a EC384 private key
-        elif key_type == 'ec384':
+        elif key_type == "ec384":
             key = ec.generate_private_key(ec.SECP384R1(), default_backend())
             self.private_key = key.private_bytes(
                 encoding=Encoding.PEM,
                 format=PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=NoEncryption()
+                encryption_algorithm=NoEncryption(),
             )
         # Generate a RSA2048 private key
-        elif key_type == 'rsa2048':
-            key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+        elif key_type == "rsa2048":
+            key = rsa.generate_private_key(
+                public_exponent=65537, key_size=2048, backend=default_backend()
+            )
             self.private_key = key.private_bytes(
                 encoding=Encoding.PEM,
                 format=PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=NoEncryption()
+                encryption_algorithm=NoEncryption(),
             )
         # Generate a RSA4096 private key
-        elif key_type == 'rsa4096':
-            key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+        elif key_type == "rsa4096":
+            key = rsa.generate_private_key(
+                public_exponent=65537, key_size=4096, backend=default_backend()
+            )
             self.private_key = key.private_bytes(
                 encoding=Encoding.PEM,
                 format=PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=NoEncryption()
+                encryption_algorithm=NoEncryption(),
             )
         # Otherwise, the requested key type is not supported. Throw an error
         else:
-            options = ['ec256', 'ec384', 'rsa2048', 'rsa4096']
-            msg = f"Invalid private key rtype '{key_type}'. Options {options}"
+            options = ["ec256", "ec384", "rsa2048", "rsa4096"]
+            msg = f"Invalid private key type '{key_type}'. Options {options}"
             raise errors.InvalidKeyType(msg)
         return self.private_key
 
-    def generate_private_key_and_csr(self, key_type: str = 'ec256') -> tuple:
+    def generate_private_key_and_csr(self, key_type: str = "ec256") -> tuple:
         """
         Generates a new private key and CSR.
 
@@ -215,7 +234,10 @@ class ACMEClient:
         # Variables
         verification_tokens = {}
         self.responses = {}
-        self.order = self.acme_client.new_order(self.csr)
+
+        # Ensure the assigned profile is still valid before creating a new order
+        self._validate_profile(self.profile)
+        self.order = self.acme_client.new_order(self.csr, profile=self.profile)
 
         # Loop through each domain being challenged
         for domain, challenge_items in self.challenges.items():
@@ -225,10 +247,14 @@ class ACMEClient:
             # Loop through each challenge for this domain and extract the response and verification token from each
             for challenge in challenge_items:
                 # Create a dict list item for this domain to store it's associated verification tokens in
-                verification_tokens[domain] = verification_tokens[domain] if domain in verification_tokens else []
+                verification_tokens[domain] = (
+                    verification_tokens[domain] if domain in verification_tokens else []
+                )
 
                 # Obtain the response and validation items from this challenge
-                response, validation = challenge.response_and_validation(self.acme_client.net.key)
+                response, validation = challenge.response_and_validation(
+                    self.acme_client.net.key
+                )
                 verification_tokens[domain].append(validation)
 
                 # Save the response, so it can be looked up later using the challenge token
@@ -268,11 +294,15 @@ class ACMEClient:
             # Request an answer for each of this domain's challenges
             for challenge in challenge_list:
                 self.answers.append(
-                    self.acme_client.answer_challenge(challenge, self.responses[challenge.chall.token])
+                    self.acme_client.answer_challenge(
+                        challenge, self.responses[challenge.chall.token]
+                    )
                 )
 
         # Request our final order and save the certificate if successful
-        self.final_order = self.acme_client.poll_and_finalize(self.order, deadline=deadline)
+        self.final_order = self.acme_client.poll_and_finalize(
+            self.order, deadline=deadline
+        )
         self.certificate = self.final_order.fullchain_pem.encode()
         return self.certificate
 
@@ -291,7 +321,7 @@ class ACMEClient:
         cert_obj = x509.load_pem_x509_certificate(self.certificate)
         self.acme_client.revoke(cert_obj, reason)
 
-    def new_account(self, verify_ssl=True, user_agent='simple_acme_dns/v2') -> None:
+    def new_account(self, verify_ssl=True, user_agent=DEFAULT_USER_AGENT) -> None:
         """
         Registers a new ACME account at the set ACME `directory` URL. By running this method, you are agreeing to the
         ACME servers terms of use.
@@ -299,21 +329,29 @@ class ACMEClient:
         Args:
             verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests.
             user_agent (str): Configures the user agent that is sent when making requests to the ACME server.
-            
+
         Examples:
             >>> client.new_account()
         """
         # Generate a new RSA2048 account key
-        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+        rsa_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048, backend=default_backend()
+        )
         self.account_key = jose.JWKRSA(key=rsa_key)
 
         # Initialize our ACME client object
-        self.net = client.ClientNetwork(self.account_key, user_agent=user_agent, verify_ssl=verify_ssl)
-        self.directory_obj = messages.Directory.from_json(self.net.get(self.directory).json())
+        self.net = client.ClientNetwork(
+            self.account_key, user_agent=user_agent, verify_ssl=verify_ssl
+        )
+        self.directory_obj = messages.Directory.from_json(
+            self.net.get(self.directory).json()
+        )
         self.acme_client = client.ClientV2(self.directory_obj, net=self.net)
 
         # Complete registration
-        registration = messages.NewRegistration.from_data(email=self._email, terms_of_service_agreed=True)
+        registration = messages.NewRegistration.from_data(
+            email=self._email, terms_of_service_agreed=True
+        )
         self.account = self.acme_client.new_account(registration)
 
     def deactivate_account(self, delete: bool = True) -> None:
@@ -327,8 +365,11 @@ class ACMEClient:
         Examples:
             >>> client.deactivate_account()
         """
-        # Tell the ACME server to deactivate this account
+        # Tell the ACME server to deactivate this account and reset account attributes
         self.acme_client.deactivate_registration(self.account)
+        self.account = None
+        self.account_key = None
+        self.acme_client = None
 
         # If this object contains a linked file path, and deletion is requested, delete the linked file
         if self.account_path and delete:
@@ -338,7 +379,9 @@ class ACMEClient:
             except FileNotFoundError:
                 pass
 
-    def export_account(self, save_certificate: bool = True, save_private_key: bool = False) -> str:
+    def export_account(
+        self, save_certificate: bool = True, save_private_key: bool = False
+    ) -> str:
         """
         Exports the object as a JSON string. This allows the ACME account data to be exported to a string that can
         be re-imported for use later.
@@ -357,23 +400,26 @@ class ACMEClient:
         """
         # Format our object into a serializable format
         acct_data = {
-            'account': self.account.to_json(),
-            'account_key': self.account_key.json_dumps(),
-            'directory': self.directory,
-            'verify_ssl': self.net.verify_ssl,
-            'domains': self._domains,
-            'certificate': self.certificate.decode() if save_certificate else '',
-            'private_key': self.private_key.decode() if save_private_key else ''
+            "email": self.email,
+            "account": self.account.to_json(),
+            "account_key": self.account_key.json_dumps(),
+            "directory": self.directory,
+            "profile": self.profile,
+            "user_agent": self.user_agent,
+            "verify_ssl": self.net.verify_ssl,
+            "domains": self._domains,
+            "certificate": self.certificate.decode() if save_certificate else "",
+            "private_key": self.private_key.decode() if save_private_key else "",
         }
 
         return json.dumps(acct_data)
 
     def export_account_to_file(
-            self,
-            path: str = '.',
-            name: str = 'account.json',
-            save_certificate: bool = True,
-            save_private_key: bool = False
+        self,
+        path: str = ".",
+        name: str = "account.json",
+        save_certificate: bool = True,
+        save_private_key: bool = False,
     ) -> None:
         """
         Exports the object as a JSON string. This allows the ACME account data to be exported to a file that can
@@ -402,15 +448,19 @@ class ACMEClient:
         # Ensure our path is an existing directory, throw an error otherwise
         if dir_path.is_dir():
             # Open the file and write our JSON content
-            with open(str(dir_path.joinpath(name)), 'w', encoding="utf-8") as account_file:
-                account_file.write(self.export_account(save_certificate, save_private_key))
+            with open(
+                str(dir_path.joinpath(name)), "w", encoding="utf-8"
+            ) as account_file:
+                account_file.write(
+                    self.export_account(save_certificate, save_private_key)
+                )
                 self.account_path = str(dir_path.joinpath(name))
         else:
             msg = f"Directory at '{path}' does not exist."
             raise errors.InvalidPath(msg)
 
     @staticmethod
-    def load_account(json_data: str) -> 'ACMEClient':
+    def load_account(json_data: str) -> "ACMEClient":
         """
         Loads an existing account from a JSON data string created by the `export_account()` method.
 
@@ -427,27 +477,33 @@ class ACMEClient:
         obj = ACMEClient()
 
         # Format the serialized data back into the object
-        verify_ssl = acct_data.get('verify_ssl', True)
-        user_agent = acct_data.get('user_agent', 'simple_acme_dns/v2')
-        obj.directory = acct_data.get('directory', None)
-        obj.domains = acct_data.get('domains', [])
-        obj.certificate = acct_data.get('certificate', '').encode()
-        obj.private_key = acct_data.get('private_key', '').encode()
-        if acct_data['account']['body']['contact']:
-            obj.email = acct_data['account']['body']['contact'][0].replace('mailto:', '')
-        obj.account = messages.RegistrationResource.json_loads(json.dumps(acct_data['account']))
-        obj.account_key = jose.JWKRSA.json_loads(acct_data['account_key'])
+        verify_ssl = acct_data.get("verify_ssl", True)
+        obj.user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
+        obj.email = acct_data.get("email", None)
+        obj.directory = acct_data.get("directory", None)
+        obj.domains = acct_data.get("domains", [])
+        obj.certificate = acct_data.get("certificate", "").encode()
+        obj.private_key = acct_data.get("private_key", "").encode()
+        obj.account_key = jose.JWKRSA.json_loads(acct_data["account_key"])
+        obj.account = messages.RegistrationResource.json_loads(
+            json.dumps(acct_data["account"])
+        )
 
         # Re-initialize the ACME client and registration
-        obj.net = client.ClientNetwork(obj.account_key, user_agent=user_agent, verify_ssl=verify_ssl)
-        obj.directory_obj = messages.Directory.from_json(obj.net.get(obj.directory).json())
+        obj.net = client.ClientNetwork(
+            obj.account_key, user_agent=obj.user_agent, verify_ssl=verify_ssl
+        )
+        obj.directory_obj = messages.Directory.from_json(
+            obj.net.get(obj.directory).json()
+        )
         obj.acme_client = client.ClientV2(obj.directory_obj, net=obj.net)
         obj.account = obj.acme_client.query_registration(obj.account)
+        obj.profile = acct_data.get("profile", None)
 
         return obj
 
     @staticmethod
-    def load_account_from_file(filepath: str) -> 'ACMEClient':
+    def load_account_from_file(filepath: str) -> "ACMEClient":
         """
         Loads an existing account from a JSON file created by the `export_account_to_file()` method.
 
@@ -468,7 +524,7 @@ class ACMEClient:
         # Ensure our file exists, throw an error otherwise
         if filepath.exists():
             # Open our file and read it's contents.
-            with open(filepath, 'r', encoding="utf-8") as json_file:
+            with open(filepath, "r", encoding="utf-8") as json_file:
                 json_data = json_file.read()
 
             # Load contents into a new object.
@@ -480,12 +536,12 @@ class ACMEClient:
         return obj
 
     def check_dns_propagation(
-            self,
-            timeout: int = 300,
-            interval: int = 2,
-            authoritative: bool = False,
-            round_robin: bool = True,
-            verbose: bool = False
+        self,
+        timeout: int = 300,
+        interval: int = 2,
+        authoritative: bool = False,
+        round_robin: bool = True,
+        verbose: bool = False,
     ) -> bool:
         """
         Check's each of our domain's TXT record until the value matches it's verification token or until the timeout is
@@ -533,10 +589,10 @@ class ACMEClient:
             for token in tokens:
                 resolv = tools.DNSQuery(
                     domain,
-                    rtype='TXT',
+                    rtype="TXT",
                     authoritative=authoritative,
                     nameservers=self.nameservers,
-                    round_robin=round_robin
+                    round_robin=round_robin,
                 )
                 resolvers.append((domain, token, resolv))
 
@@ -552,7 +608,7 @@ class ACMEClient:
                         verified.append(token)
                     # If verbose mode is enabled, print the results to the console
                     if verbose:
-                        action = ('found' if token in verified else 'not found')
+                        action = "found" if token in verified else "not found"
                         values = resolver.values
                         nameserver = resolver.last_nameserver
                         msg = f"Token '{token}' for '{domain}' {action} in {values} via {nameserver}"
@@ -613,7 +669,9 @@ class ACMEClient:
 
         # If no challenges were found, throw an error
         if not challs:
-            msg = f"ACME server at '{self.directory}' does not support DNS-01 challenge."
+            msg = (
+                f"ACME server at '{self.directory}' does not support DNS-01 challenge."
+            )
             raise errors.ChallengeUnavailable(msg.format(directory=str(self.directory)))
 
         return challs
@@ -630,7 +688,7 @@ class ACMEClient:
             simple_acme_dns.errors.InvalidAccount: When no account registration is configured for this object.
         """
         if not isinstance(self._acme_client, client.ClientV2):
-            msg = 'No account registration found. You must register a new account or load an existing account first.'
+            msg = "No account registration found. You must register a new account or load an existing account first."
             raise errors.InvalidAccount(msg)
 
         return self._acme_client
@@ -646,11 +704,90 @@ class ACMEClient:
         Raises:
             simple_acme_dns.errors.InvalidAccount: When the `value` is not a valid email address
         """
-        if not isinstance(value, client.ClientV2):
+        if value is not None and not isinstance(value, client.ClientV2):
             msg = f"Value '{value}' is not an acme.client.ClientV2 object."
             raise errors.InvalidAccount(msg)
 
         self._acme_client = value
+
+    def _validate_profile(self, profile: Union[str, None]) -> None:
+        """
+        Validates that the requested ACME profile is supported by the ACME server.
+
+        Args:
+            profile (Union[str, None]): The requested ACME profile to validate.
+
+        Raises:
+            simple_acme_dns.errors.InvalidProfile: When the requested profile is not supported by the ACME server.
+        """
+        # When no profile is requested, simply set the profile to None and return
+        if not profile:
+            return
+
+        # Check the ACME server directory's metadata for support profiles
+        directory_metadata = self.acme_client.directory.to_json().get("meta", {})
+        profile_options = list(directory_metadata.get("profiles", {}))
+        if profile not in profile_options:
+            raise errors.InvalidProfile(
+                f"ACME server does not support profile option '{profile}'. Valid options are: {profile_options}"
+            )
+
+    @property
+    def profile(self) -> Union[str, None]:
+        """
+        Getter for the `profile` property. This returns the current ACME profile being used.
+
+        Returns:
+            Union[str, None]: The current ACME profile being used.
+        """
+        return self._profile
+
+    @profile.setter
+    def profile(self, value: Union[str, None]) -> None:
+        """
+        Setter for the `profile` property. This ensures the profile is a valid string.
+
+        Args:
+            value (Union[str, None]): The `profile` value being set. Use None to omit profile selection.
+
+        Raises:
+            simple_acme_dns.errors.InvalidProfile: When the `value` is not a valid profile.
+        """
+        # Validate the requested profile against the ACME server's supported profiles before setting
+        self._validate_profile(value)
+        self._profile = value
+
+    @property
+    def user_agent(self) -> str:
+        """
+        Getter for the `user_agent` property. This returns the current user agent being used.
+
+        Returns:
+            str: The current user agent being used.
+        """
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, value: str) -> None:
+        """
+        Setter for the `user_agent` property. This ensures the user agent is also updated in the underlying ACME
+        client anytime it is set.
+
+        Args:
+            value (str): The `user_agent` value being set.
+
+        Raises:
+            simple_acme_dns.errors.InvalidUserAgent: When the `value` is not a valid user agent string.
+        """
+        # Ensure the user agent is a string before setting
+        if not isinstance(value, str):
+            raise errors.InvalidUserAgent("The user agent must be a string.")
+
+        # If an ACME client network object exists, update the user agent there as well
+        if self.net:
+            self.net.user_agent = value
+
+        self._user_agent = value
 
     @property
     def email(self) -> str:
@@ -664,24 +801,21 @@ class ACMEClient:
             simple_acme_dns.errors.InvalidEmail: When `email` is not set.
 
         """
-        if not self._email:
-            msg = 'No account email found. You must set the _email value first.'
-            raise errors.InvalidEmail(msg)
-
         return self._email
 
     @email.setter
-    def email(self, value: str):
+    def email(self, value: Union[str, None]) -> None:
         """
         Setter for the `email` property. This ensures an email address is valid before setting.
 
         Args
-         value (str): The `email` value being set.
+         value (Union[str, None]): The `email` value being set. Use None for anonymous accounts.
 
         Raises:
             simple_acme_dns.errors.InvalidEmail: When the `value` is not a valid email address
         """
-        if not validators.email(value):
+        # If an email address was provided, ensure it is a valid email address
+        if value and not validators.email(value):
             msg = f"Value '{value}' is not a valid email address."
             raise errors.InvalidEmail(msg)
 
@@ -703,7 +837,7 @@ class ACMEClient:
                 the `request_verification_tokens()` method.
         """
         if not self._verification_tokens:
-            msg = 'No verification tokens found. You must run request_verification_tokens() first.'
+            msg = "No verification tokens found. You must run request_verification_tokens() first."
             raise errors.InvalidVerificationToken(msg)
 
         return self._verification_tokens
@@ -720,7 +854,7 @@ class ACMEClient:
              simple_acme_dns.errors.InvalidDomain: When no `domains` have been set.
         """
         if not self._domains:
-            msg = 'No domains found. You must set the domains value first.'
+            msg = "No domains found. You must set the domains value first."
             raise errors.InvalidDomain(msg)
 
         return self._domains

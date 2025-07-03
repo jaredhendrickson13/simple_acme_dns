@@ -1,4 +1,4 @@
-# Copyright 2023 Jared Hendrickson
+# Copyright 2025 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ client = simple_acme_dns.ACMEClient(
     domains=["test.jaredhendrickson.com", "test2.jaredhendrickson.com"],
     email="user@jaredhendrickson.com",
     directory="https://acme-staging-v02.api.letsencrypt.org/directory",
-    nameservers=["8.8.8.8", "1.1.1.1"]
+    profile="shortlived",
+    nameservers=["8.8.8.8", "1.1.1.1"],
 )
 
 # Manually enroll a new account

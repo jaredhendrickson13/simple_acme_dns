@@ -1,4 +1,4 @@
-# Copyright 2023 Jared Hendrickson
+# Copyright 2025 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import simple_acme_dns
 
 class MockOrder:
     """Creates a mock ACME Order object to use in testing."""
+
     # Supress pylint errors, this mock object only contains what is necessary for testing.
     # pylint: disable=too-few-public-methods
     authorizations = []
@@ -26,6 +27,7 @@ class MockOrder:
 
 class TestSimpleAcmeDnsErrors(unittest.TestCase):
     """Checks to ensure exception classes used by simple_acme_dns are raised when expected."""
+
     def test_challenge_verification(self):
         """Checks that verification of available challenges is performed."""
         # Create a new client for this test
@@ -66,10 +68,6 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         """Checks that validation of registration is performed."""
         # Create a new client for this test
         client = simple_acme_dns.ACMEClient()
-
-        # Ensure email validation fails if email is not set
-        with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
-            return client.email
 
         # Ensure email validation fails if email is set to a non-email address value
         with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
@@ -128,6 +126,29 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         with self.assertRaises(simple_acme_dns.errors.ACMETimeout):
             raise simple_acme_dns.errors.ACMETimeout("test_acme_timeout")
 
+    def test_profile(self) -> None:
+        """Tests that profile validation raises an error when the ACME server doesn't support."""
+        # Create a new client for this test
+        client = simple_acme_dns.ACMEClient(
+            domains=simple_acme_dns.tests.TEST_DOMAINS,
+            directory=simple_acme_dns.tests.TEST_DIRECTORY,
+            new_account=True,
+            verify_ssl=False,
+        )
 
-if __name__ == '__main__':
+        # Ensure profile cannot be set to a non-supported profile
+        with self.assertRaises(simple_acme_dns.errors.InvalidProfile):
+            client.profile = "INVALID_PROFILE"
+
+    def test_user_agent(self) -> None:
+        """Tests that user agent validation raises an erro
+        r when the ACME server doesn't support."""
+        client = simple_acme_dns.ACMEClient()
+
+        # Ensure user agent cannot be set to a non-supported user agent
+        with self.assertRaises(simple_acme_dns.errors.InvalidUserAgent):
+            client.user_agent = 12345
+
+
+if __name__ == "__main__":
     unittest.main()

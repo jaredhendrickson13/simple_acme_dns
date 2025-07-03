@@ -1,4 +1,4 @@
-# Copyright 2023 Jared Hendrickson
+# Copyright 2025 Jared Hendrickson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,26 +13,33 @@
 # limitations under the License.
 """Tests primary functionality of the simple_acme_dns package."""
 import os
-import random
 import time
 import unittest
 
 import acme.messages
 
 import simple_acme_dns
-from simple_acme_dns.tests.tools import GoogleDNSClient, is_csr, is_cert, is_json, is_private_key
+from simple_acme_dns.tests import (
+    TEST_DIRECTORY,
+    TEST_DOMAINS,
+    TEST_EMAIL,
+    TEST_NAMESERVERS,
+)
+from simple_acme_dns.tests.tools import (
+    GoogleDNSClient,
+    is_csr,
+    is_cert,
+    is_json,
+    is_private_key,
+)
 
 # Variables and constants
-BASE_DOMAIN = "testing.jaredhendrickson.com"
-TEST_DOMAINS = [f"{random.randint(10000, 99999)}.simple-acme-dns.{BASE_DOMAIN}"]
-TEST_EMAIL = f"simple-acme-dns@{BASE_DOMAIN}"
-TEST_DIRECTORY = os.environ.get("ACME_DIRECTORY", "https://acme-staging-v02.api.letsencrypt.org/directory")
-TEST_NAMESERVERS = ["8.8.8.8", "1.1.1.1"]
-unittest.TestLoader.sortTestMethodsUsing = None    # Ensure tests run in order
+unittest.TestLoader.sortTestMethodsUsing = None  # Ensure tests run in order
 
 
 class TestSimpleAcmeDns(unittest.TestCase):
     """Tests the simple_acme_dns module."""
+
     # Shared attributes
     client = None
 
@@ -44,8 +51,8 @@ class TestSimpleAcmeDns(unittest.TestCase):
             email=TEST_EMAIL,
             directory=TEST_DIRECTORY,
             nameservers=TEST_NAMESERVERS,
-            verify_ssl=False
-    )
+            verify_ssl=False,
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -67,11 +74,13 @@ class TestSimpleAcmeDns(unittest.TestCase):
     def test_generate_keys_and_csr(self):
         """Test to ensure both keys and CSRs are generated correctly."""
         # Variables
-        key_type_options = ['ec256', 'ec384', 'rsa2048', 'rsa4096']
+        key_type_options = ["ec256", "ec384", "rsa2048", "rsa4096"]
 
         # Ensure each key option is accepted and generates the correct key format
         for key_type in key_type_options:
-            self.assertIsInstance(self.client.generate_private_key(key_type=key_type), bytes)
+            self.assertIsInstance(
+                self.client.generate_private_key(key_type=key_type), bytes
+            )
             self.assertTrue(is_private_key(self.client.private_key, key_type))
 
         # Ensure the CSR is generated correctly
@@ -93,7 +102,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
             nameservers=TEST_NAMESERVERS,
             new_account=True,
             generate_csr=True,
-            verify_ssl=False
+            verify_ssl=False,
         )
 
         # Ensure there is an account enrolled and a CSR/private key created
@@ -122,7 +131,9 @@ class TestSimpleAcmeDns(unittest.TestCase):
 
         # Create the TXT record to verify ACME verification for each domain
         for domain, tokens in self.client.verification_tokens.items():
-            gcloud_dns = GoogleDNSClient(name=domain, rtype="TXT", ttl=3600, data=tokens)
+            gcloud_dns = GoogleDNSClient(
+                name=domain, rtype="TXT", ttl=3600, data=tokens
+            )
             gcloud_dns.create_record(replace=True)
 
         # Start ACME verification and ensure DNS propagation checks work
@@ -143,7 +154,9 @@ class TestSimpleAcmeDns(unittest.TestCase):
         """Checks that the account can be exported as a JSON string or file."""
         # Run export methods
         self.assertTrue(is_json(self.client.export_account(save_private_key=True)))
-        self.client.export_account_to_file(name="_test-account.json", save_private_key=True)
+        self.client.export_account_to_file(
+            name="_test-account.json", save_private_key=True
+        )
 
         # Ensure the export file is written
         self.assertTrue(os.path.exists("./_test-account.json"))
@@ -161,14 +174,16 @@ class TestSimpleAcmeDns(unittest.TestCase):
         )
         self.assertEqual(
             self.client.export_account(save_private_key=True),
-            json_str_import.export_account(save_private_key=True)
+            json_str_import.export_account(save_private_key=True),
         )
 
         # Ensure the account can be imported via JSON file exported previously and that it matches the original object
-        json_file_import = simple_acme_dns.ACMEClient.load_account_from_file("./_test-account.json")
+        json_file_import = simple_acme_dns.ACMEClient.load_account_from_file(
+            "./_test-account.json"
+        )
         self.assertEqual(
             self.client.export_account(save_private_key=True),
-            json_file_import.export_account(save_private_key=True)
+            json_file_import.export_account(save_private_key=True),
         )
 
     def test_account_import_files(self):
@@ -191,7 +206,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
             nameservers=TEST_NAMESERVERS,
             new_account=True,
             generate_csr=True,
-            verify_ssl=False
+            verify_ssl=False,
         )
         client.account_path = "INVALID_FILE.json"
         self.assertIsNone(client.deactivate_account(delete=True))
@@ -208,10 +223,27 @@ class TestSimpleAcmeDns(unittest.TestCase):
                 domains=TEST_DOMAINS,
                 directory=TEST_DIRECTORY,
                 nameservers=TEST_NAMESERVERS,
-                verify_ssl=False
+                verify_ssl=False,
             )
-            return client.email
+            client.email = "not an email"
+
+    def test_setting_user_agent_updates_acme_net_user_agent(self) -> None:
+        """Checks that setting the user_agent also updates the net.user_agent"""
+        # Create a new client for this test and ensure the specified user agent also sets the net.user_agent
+        client = simple_acme_dns.ACMEClient(
+            domains=TEST_DOMAINS,
+            directory=TEST_DIRECTORY,
+            nameservers=TEST_NAMESERVERS,
+            user_agent="UserAgent/1.0",
+            new_account=True,
+            verify_ssl=False,
+        )
+        self.assertEqual(client.net.user_agent, "UserAgent/1.0")
+
+        # Update the user agent and ensure it updates the net.user_agent as well
+        client.user_agent = "UserAgent/1.1"
+        self.assertEqual(client.net.user_agent, "UserAgent/1.1")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
