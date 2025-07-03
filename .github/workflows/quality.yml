@@ -9,8 +9,25 @@ on:
   schedule:
     - cron: '0 12 5 * *'
 
-
 jobs:
+  check_black:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    - name: Check code formatting with black
+      run: |
+        black . --check
   check_pylint:
     runs-on: ubuntu-latest
     strategy:
