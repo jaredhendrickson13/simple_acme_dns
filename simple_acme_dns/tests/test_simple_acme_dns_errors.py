@@ -138,6 +138,15 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         with self.assertRaises(simple_acme_dns.errors.InvalidProfile):
             client.profile = "INVALID_PROFILE"
 
+    def test_user_agent(self) -> None:
+        """Tests that user agent validation raises an erro
+        r when the ACME server doesn't support."""
+        client = simple_acme_dns.ACMEClient()
+
+        # Ensure user agent cannot be set to a non-supported user agent
+        with self.assertRaises(simple_acme_dns.errors.InvalidUserAgent):
+            client.user_agent = 12345
+
 
 if __name__ == "__main__":
     unittest.main()
