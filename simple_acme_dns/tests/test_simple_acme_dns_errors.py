@@ -19,6 +19,7 @@ import simple_acme_dns
 
 class MockOrder:
     """Creates a mock ACME Order object to use in testing."""
+
     # Supress pylint errors, this mock object only contains what is necessary for testing.
     # pylint: disable=too-few-public-methods
     authorizations = []
@@ -26,6 +27,7 @@ class MockOrder:
 
 class TestSimpleAcmeDnsErrors(unittest.TestCase):
     """Checks to ensure exception classes used by simple_acme_dns are raised when expected."""
+
     def test_challenge_verification(self):
         """Checks that verification of available challenges is performed."""
         # Create a new client for this test
@@ -129,5 +131,5 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
             raise simple_acme_dns.errors.ACMETimeout("test_acme_timeout")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

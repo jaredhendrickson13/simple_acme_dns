@@ -18,22 +18,22 @@ from setuptools import setup
 # Open and read our README markdown for the long description value
 def read_readme():
     """Opens and reads the main README.md file for this repo."""
-    with open('README.md', 'r', encoding='utf-8') as readme_file:
+    with open("README.md", "r", encoding="utf-8") as readme_file:
         return readme_file.read()
 
 
 # Open, read and parse our requirements text to an array for the install_requires value
 def read_requirements():
     """Opens and read the requirements.txt file for this repo."""
-    with open('requirements.txt', 'r', encoding='utf-8') as requirements_file:
+    with open("requirements.txt", "r", encoding="utf-8") as requirements_file:
         return list(filter(None, requirements_file.read().split("\n")))
 
 
 # Set our setup parameters
 setup(
-    name='simple_acme_dns',
-    author='Jared Hendrickson',
-    author_email='github@jaredhendrickson.com',
+    name="simple_acme_dns",
+    author="Jared Hendrickson",
+    author_email="github@jaredhendrickson.com",
     url="https://github.com/jaredhendrickson13/simple_acme_dns",
     license="Apache-2.0",
     description="A Python ACME client for the DNS-01 challenge",
@@ -47,5 +47,5 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.9'
+    python_requires=">=3.9",
 )

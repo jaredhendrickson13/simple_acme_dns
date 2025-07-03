@@ -22,7 +22,7 @@ from google.cloud import dns
 def is_cert(cert: bytes) -> bool:
     """Checks if a given cert is PEM formatted certificate."""
     # Check for PEM cert
-    if cert.startswith(b'-----BEGIN CERTIFICATE-----'):
+    if cert.startswith(b"-----BEGIN CERTIFICATE-----"):
         return True
 
     return False
@@ -31,13 +31,19 @@ def is_cert(cert: bytes) -> bool:
 def is_private_key(private_key: bytes, key_type: str) -> bool:
     """Checks if a given private key matches a specific key type."""
     # Check for RSA keys
-    if key_type.startswith("rsa") and private_key.startswith(b'-----BEGIN PRIVATE KEY-----'):
+    if key_type.startswith("rsa") and private_key.startswith(
+        b"-----BEGIN PRIVATE KEY-----"
+    ):
         return True
-    if key_type.startswith("rsa") and private_key.startswith(b'-----BEGIN RSA PRIVATE KEY-----'):
+    if key_type.startswith("rsa") and private_key.startswith(
+        b"-----BEGIN RSA PRIVATE KEY-----"
+    ):
         return True
 
     # Check for EC keys
-    if key_type.startswith("ec") and private_key.startswith(b'-----BEGIN EC PRIVATE KEY-----'):
+    if key_type.startswith("ec") and private_key.startswith(
+        b"-----BEGIN EC PRIVATE KEY-----"
+    ):
         return True
 
     return False
@@ -45,7 +51,7 @@ def is_private_key(private_key: bytes, key_type: str) -> bool:
 
 def is_csr(csr: bytes) -> bool:
     """Checks if a given bytes is a CSR"""
-    if csr.startswith(b'-----BEGIN CERTIFICATE REQUEST-----'):
+    if csr.startswith(b"-----BEGIN CERTIFICATE REQUEST-----"):
         return True
 
     return False
@@ -76,7 +82,7 @@ class GoogleDNSClient:
         :param data: the data values to assign the DNS record in list format
         """
         # Authenticate by loading the JSON service file via the GCLOUD_DNS_JSON enviroment variable
-        service_account_json = json.loads(os.environ.get("GCLOUD_DNS_JSON", '{}'))
+        service_account_json = json.loads(os.environ.get("GCLOUD_DNS_JSON", "{}"))
         self.client = dns.Client.from_service_account_info(service_account_json)
 
         # Set object attributes
@@ -130,7 +136,9 @@ class GoogleDNSClient:
             self.delete_record()
 
         # Create our new record and format the change request
-        self.record = self.zone.resource_record_set(self.name, self.rtype, self.ttl, self.data)
+        self.record = self.zone.resource_record_set(
+            self.name, self.rtype, self.ttl, self.data
+        )
         change = self.zone.changes()
         change.add_record_set(self.record)
         change.create()

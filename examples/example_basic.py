@@ -19,9 +19,12 @@ client = simple_acme_dns.ACMEClient(
     domains=["test.example.com"],
     email="user@example.com",
     directory="https://acme-staging-v02.api.letsencrypt.org/directory",
-    nameservers=["8.8.8.8", "1.1.1.1"],    # Set the nameservers to query when checking DNS propagation
-    new_account=True,    # Register a new ACME account upon creation of our object
-    generate_csr=True    # Generate a new private key and CSR upon creation of our object
+    nameservers=[
+        "8.8.8.8",
+        "1.1.1.1",
+    ],  # Set the nameservers to query when checking DNS propagation
+    new_account=True,  # Register a new ACME account upon creation of our object
+    generate_csr=True,  # Generate a new private key and CSR upon creation of our object
 )
 
 # Request the verification token for our DOMAIN. Print the challenge FQDN and it's corresponding token.

@@ -22,7 +22,7 @@ client = simple_acme_dns.ACMEClient(
     domains=["test.jaredhendrickson.com", "test2.jaredhendrickson.com"],
     email="user@jaredhendrickson.com",
     directory="https://acme-staging-v02.api.letsencrypt.org/directory",
-    nameservers=["8.8.8.8", "1.1.1.1"]
+    nameservers=["8.8.8.8", "1.1.1.1"],
 )
 
 # Manually enroll a new account
