@@ -227,6 +227,23 @@ class TestSimpleAcmeDns(unittest.TestCase):
             )
             client.email = "not an email"
 
+    def test_setting_user_agent_updates_acme_net_user_agent(self) -> None:
+        """Checks that setting the user_agent also updates the net.user_agent"""
+        # Create a new client for this test and ensure the specified user agent also sets the net.user_agent
+        client = simple_acme_dns.ACMEClient(
+            domains=TEST_DOMAINS,
+            directory=TEST_DIRECTORY,
+            nameservers=TEST_NAMESERVERS,
+            user_agent="UserAgent/1.0",
+            new_account=True,
+            verify_ssl=False,
+        )
+        self.assertEqual(client.user_agent, "UserAgent/1.0")
+
+        # Update the user agent and ensure it updates the net.user_agent as well
+        client.user_agent = "UserAgent/1.1"
+        self.assertEqual(client.net.user_agent, "TestUserAgent/1.0")
+
 
 if __name__ == "__main__":
     unittest.main()
