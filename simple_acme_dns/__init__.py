@@ -20,10 +20,10 @@ import datetime
 import json
 import pathlib
 import time
+from typing import Union
 
 import josepy as jose
 import validators
-from typing import Union
 from acme import challenges
 from acme import client
 from acme import crypto_util
@@ -39,7 +39,6 @@ from cryptography.hazmat.primitives.serialization import (
 
 from . import errors
 from . import tools
-
 
 # Constants and Variables
 __pdoc__ = {"tests": False}  # Excludes 'tests' submodule from documentation
