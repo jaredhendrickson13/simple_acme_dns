@@ -55,6 +55,7 @@ class ACMEClient:
     # This package is all about user simplicity, keeping all items contained to one class supports this.
     # pylint: disable=too-many-instance-attributes,too-many-public-methods,too-many-positional-arguments
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         domains: list = None,
