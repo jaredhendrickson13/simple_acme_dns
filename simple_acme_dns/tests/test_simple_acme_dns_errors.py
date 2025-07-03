@@ -126,6 +126,18 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         with self.assertRaises(simple_acme_dns.errors.ACMETimeout):
             raise simple_acme_dns.errors.ACMETimeout("test_acme_timeout")
 
+    def test_profile(self) -> None:
+        """Tests that profile validation raises an error when the ACME server doesn't support."""
+        # Create a new client for this test
+        client = simple_acme_dns.ACMEClient(
+            domains=simple_acme_dns.tests.TEST_DOMAINS,
+            directory=simple_acme_dns.tests.TEST_DIRECTORY,
+        )
+
+        # Ensure profile cannot be set to a non-supported profile
+        with self.assertRaises(simple_acme_dns.errors.InvalidProfile):
+            client.profile = "INVALID_PROFILE"
+
 
 if __name__ == "__main__":
     unittest.main()
