@@ -238,11 +238,11 @@ class TestSimpleAcmeDns(unittest.TestCase):
             new_account=True,
             verify_ssl=False,
         )
-        self.assertEqual(client.user_agent, "UserAgent/1.0")
+        self.assertEqual(client.net.user_agent, "UserAgent/1.0")
 
         # Update the user agent and ensure it updates the net.user_agent as well
         client.user_agent = "UserAgent/1.1"
-        self.assertEqual(client.net.user_agent, "TestUserAgent/1.0")
+        self.assertEqual(client.net.user_agent, "UserAgent/1.1")
 
 
 if __name__ == "__main__":
