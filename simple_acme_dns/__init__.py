@@ -42,7 +42,7 @@ from . import tools
 
 # Constants and Variables
 __pdoc__ = {"tests": False}  # Excludes 'tests' submodule from documentation
-__version__ = tools.get_package_version()
+__version__ = tools.get_package_version("simple_acme_dns")
 DNS_LABEL = "_acme-challenge"
 DEFAULT_USER_AGENT = f"simple_acme_dns/{__version__}"
 

@@ -17,15 +17,18 @@ from importlib.metadata import version, PackageNotFoundError
 import dns.resolver
 
 
-def get_package_version() -> str:
+def get_package_version(name: str) -> str:
     """
     Returns the current package version installed on the system
+
+    Args:
+        name (str): The name of the package to check.
 
     Returns:
         str: The current package version or "unknown" if not installed.
     """
     try:
-        return version("simple_acme_dns")
+        return version(name)
     except PackageNotFoundError:
         return "unknown"
 

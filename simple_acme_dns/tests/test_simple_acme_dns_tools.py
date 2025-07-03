@@ -14,9 +14,10 @@
 """Tests tools used by the simple_acme_dns package and tests."""
 import unittest
 from simple_acme_dns.tests.tools import is_csr, is_cert, is_json, is_private_key
+from simple_acme_dns import tools
 
 
-class TestSimpleAcmeDnsTools(unittest.TestCase):
+class TestSimpleAcmeTools(unittest.TestCase):
     """Tests tools functions used both by tests and the main package."""
 
     def test_is_csr(self):
@@ -61,6 +62,16 @@ class TestSimpleAcmeDnsTools(unittest.TestCase):
         # Ensure the good json returns true and the bad json returns false
         self.assertTrue(is_json(good_json))
         self.assertFalse(is_json(bad_json))
+
+    def test_get_package_version(self):
+        """Tests the get_package_version function."""
+        # Ensure the package version is returned correctly
+        version = tools.get_package_version("simple_acme_dns")
+        self.assertIsInstance(version, str)
+
+        # Ensure "unknown" is returned for non-existent packages
+        unknown_version = tools.get_package_version("NONEXISTENT_PACKAGE")
+        self.assertEqual(unknown_version, "unknown")
 
 
 if __name__ == "__main__":
