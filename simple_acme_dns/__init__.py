@@ -282,7 +282,7 @@ class ACMEClient:
             >>> client.revoke_certificate()
         """
         # Load the certificate crypto object and request revocation from the ACME server
-        cert_obj = jose.ComparableX509(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, self.certificate))
+        cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, self.certificate)
         self.acme_client.revoke(cert_obj, reason)
 
     def new_account(self, verify_ssl=True, user_agent='simple_acme_dns/v2') -> None:
