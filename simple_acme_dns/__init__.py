@@ -500,7 +500,6 @@ class ACMEClient:
         obj.account = obj.acme_client.query_registration(obj.account)
         obj.profile = acct_data.get("profile", None)
 
-
         return obj
 
     @staticmethod
