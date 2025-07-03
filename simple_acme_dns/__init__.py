@@ -45,7 +45,7 @@ from . import tools
 __pdoc__ = {"tests": False}  # Excludes 'tests' submodule from documentation
 __version__ = tools.get_package_version()
 DNS_LABEL = "_acme-challenge"
-DEFAULT_USER_AGENT = f"simple_acme_dns/{__version__})"
+DEFAULT_USER_AGENT = f"simple_acme_dns/{__version__}"
 
 
 class ACMEClient:
@@ -65,6 +65,7 @@ class ACMEClient:
         nameservers: list = None,
         new_account: bool = False,
         generate_csr: bool = False,
+        user_agent: str = DEFAULT_USER_AGENT,
         verify_ssl: bool = True,
     ):
         """
@@ -76,6 +77,7 @@ class ACMEClient:
             nameservers (list): A list of DNS server hosts to query when checking DNS propagation.
             new_account (bool): Automatically create a new ACME account upon creation.
             generate_csr (bool): Automatically generate a new private key and CSR upon creation.
+            user_agent (str): The user agent to use when making requests to the ACME server.
             verify_ssl (bool): Verify the SSL certificate of the ACME server when making requests. This only applies
                 when creating a new account.
 
@@ -93,6 +95,7 @@ class ACMEClient:
         self.csr = "".encode()
         self.directory = directory
         self.directory_obj = None
+        self._user_agent = user_agent
         self.account_key = None
         self.account = None
         self.account_path = None
@@ -112,7 +115,7 @@ class ACMEClient:
 
         # Automatically create a new account if requested
         if new_account:
-            self.new_account(verify_ssl=verify_ssl)
+            self.new_account(verify_ssl=verify_ssl, user_agent=user_agent)
         # Automatically create a new private key and CSR
         if generate_csr:
             self.generate_private_key_and_csr()
@@ -318,7 +321,7 @@ class ACMEClient:
         cert_obj = x509.load_pem_x509_certificate(self.certificate)
         self.acme_client.revoke(cert_obj, reason)
 
-    def new_account(self, verify_ssl=True, user_agent="simple_acme_dns/v2") -> None:
+    def new_account(self, verify_ssl=True, user_agent=DEFAULT_USER_AGENT) -> None:
         """
         Registers a new ACME account at the set ACME `directory` URL. By running this method, you are agreeing to the
         ACME servers terms of use.
@@ -402,6 +405,7 @@ class ACMEClient:
             "account_key": self.account_key.json_dumps(),
             "directory": self.directory,
             "profile": self.profile,
+            "user_agent": self.user_agent,
             "verify_ssl": self.net.verify_ssl,
             "domains": self._domains,
             "certificate": self.certificate.decode() if save_certificate else "",
@@ -474,21 +478,21 @@ class ACMEClient:
 
         # Format the serialized data back into the object
         verify_ssl = acct_data.get("verify_ssl", True)
-        user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
+        obj.user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
         obj.email = acct_data.get("email", None)
         obj.directory = acct_data.get("directory", None)
         obj._profile = acct_data.get("profile", None)
         obj.domains = acct_data.get("domains", [])
         obj.certificate = acct_data.get("certificate", "").encode()
         obj.private_key = acct_data.get("private_key", "").encode()
+        obj.account_key = jose.JWKRSA.json_loads(acct_data["account_key"])
         obj.account = messages.RegistrationResource.json_loads(
             json.dumps(acct_data["account"])
         )
-        obj.account_key = jose.JWKRSA.json_loads(acct_data["account_key"])
 
         # Re-initialize the ACME client and registration
         obj.net = client.ClientNetwork(
-            obj.account_key, user_agent=user_agent, verify_ssl=verify_ssl
+            obj.account_key, user_agent=obj.user_agent, verify_ssl=verify_ssl
         )
         obj.directory_obj = messages.Directory.from_json(
             obj.net.get(obj.directory).json()
@@ -752,6 +756,38 @@ class ACMEClient:
         # Validate the requested profile against the ACME server's supported profiles before setting
         self._validate_profile(value)
         self._profile = value
+
+    @property
+    def user_agent(self) -> str:
+        """
+        Getter for the `user_agent` property. This returns the current user agent being used.
+
+        Returns:
+            str: The current user agent being used.
+        """
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, value: str) -> None:
+        """
+        Setter for the `user_agent` property. This ensures the user agent is also updated in the underlying ACME
+        client anytime it is set.
+
+        Args:
+            value (str): The `user_agent` value being set.
+
+        Raises:
+            simple_acme_dns.errors.InvalidUserAgent: When the `value` is not a valid user agent string.
+        """
+        # Ensure the user agent is a string before setting
+        if not isinstance(value, str):
+            raise errors.InvalidUserAgent("The user agent must be a string.")
+
+        # If an ACME client network object exists, update the user agent there as well
+        if self.net:
+            self.net.user_agent = value
+
+        self._user_agent = value
 
     @property
     def email(self) -> str:

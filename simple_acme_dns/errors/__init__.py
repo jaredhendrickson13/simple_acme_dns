@@ -70,6 +70,13 @@ class InvalidProfile(Exception):
         self.message = message
 
 
+class InvalidUserAgent(Exception):
+    """Error occurs when the requested user agent is invalid or not supported"""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
 class InvalidEmail(Exception):
     """Error occurs when an account action was requested but no email value exists"""
 
