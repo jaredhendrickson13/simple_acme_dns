@@ -334,8 +334,11 @@ class ACMEClient:
         Examples:
             >>> client.deactivate_account()
         """
-        # Tell the ACME server to deactivate this account
+        # Tell the ACME server to deactivate this account and reset account attributes
         self.acme_client.deactivate_registration(self.account)
+        self.account = None
+        self.account_key = None
+        self.acme_client = None
 
         # If this object contains a linked file path, and deletion is requested, delete the linked file
         if self.account_path and delete:
