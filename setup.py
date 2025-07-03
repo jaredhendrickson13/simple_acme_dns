@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Sets build parameters for the simple_acme_dns module."""
+import os
 from setuptools import setup
 
 
@@ -39,7 +40,7 @@ setup(
     description="A Python ACME client for the DNS-01 challenge",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    version="3.3.0",
+    version=os.environ.get("SIMPLE_ACME_DNS_VERSION", "0.0.0"),
     packages=["simple_acme_dns", "simple_acme_dns.tools", "simple_acme_dns.errors"],
     install_requires=read_requirements(),
     classifiers=[
