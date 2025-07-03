@@ -33,6 +33,8 @@ def is_private_key(private_key: bytes, key_type: str) -> bool:
     # Check for RSA keys
     if key_type.startswith("rsa") and private_key.startswith(b'-----BEGIN PRIVATE KEY-----'):
         return True
+    if key_type.startswith("rsa") and private_key.startswith(b'-----BEGIN RSA PRIVATE KEY-----'):
+        return True
 
     # Check for EC keys
     if key_type.startswith("ec") and private_key.startswith(b'-----BEGIN EC PRIVATE KEY-----'):

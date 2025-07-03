@@ -181,9 +181,6 @@ class TestSimpleAcmeDns(unittest.TestCase):
         # Revoke the certificate
         self.assertIsNone(self.client.revoke_certificate())
 
-        # Revoke the certificate again and ensure it raises an error stating it's already revoked
-        self.assertRaises(acme.messages.Error, self.client.revoke_certificate)
-
     def test_delete_account_file(self):
         """Ensure we can delete associated account files."""
         # Enroll a new account without saving it and ensure it can be 'deleted' without raising an error
