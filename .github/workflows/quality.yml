@@ -28,8 +28,10 @@ jobs:
     - name: Check code formatting with black
       run: |
         black . --check
+
   check_pylint:
     runs-on: ubuntu-latest
+    needs: [check_black]
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
