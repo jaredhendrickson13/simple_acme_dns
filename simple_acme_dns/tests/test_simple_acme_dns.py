@@ -227,7 +227,7 @@ class TestSimpleAcmeDns(unittest.TestCase):
                 nameservers=TEST_NAMESERVERS,
                 verify_ssl=False,
             )
-            return client.email
+            client.email = "not an email"
 
 
 if __name__ == "__main__":

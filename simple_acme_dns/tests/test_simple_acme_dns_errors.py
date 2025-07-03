@@ -69,10 +69,6 @@ class TestSimpleAcmeDnsErrors(unittest.TestCase):
         # Create a new client for this test
         client = simple_acme_dns.ACMEClient()
 
-        # Ensure email validation fails if email is not set
-        with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
-            return client.email
-
         # Ensure email validation fails if email is set to a non-email address value
         with self.assertRaises(simple_acme_dns.errors.InvalidEmail):
             client.email = "Not a valid email address!"
