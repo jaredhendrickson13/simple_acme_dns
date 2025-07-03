@@ -59,7 +59,7 @@ class ACMEClient:
     def __init__(
         self,
         domains: list = None,
-        email: str = None,
+        email: Union[str, None] = None,
         directory: str = "https://acme-staging-v02.api.letsencrypt.org/directory",
         profile: Union[str, None] = None,
         nameservers: list = None,
@@ -70,7 +70,7 @@ class ACMEClient:
         """
         Args:
             domains (list): A list of domains to request a certificate for.
-            email (str): An email address to use when registering new ACME accounts.
+            email (Union[str, None]): An email address to use when registering new ACME accounts.
             directory (str): The ACME directory URL to interact with.
             profile (Union[str, None]): The ACME profile to use. Use None to omit profile selection.
             nameservers (list): A list of DNS server hosts to query when checking DNS propagation.
@@ -397,6 +397,7 @@ class ACMEClient:
         """
         # Format our object into a serializable format
         acct_data = {
+            "email": self.email,
             "account": self.account.to_json(),
             "account_key": self.account_key.json_dumps(),
             "directory": self.directory,
@@ -474,15 +475,12 @@ class ACMEClient:
         # Format the serialized data back into the object
         verify_ssl = acct_data.get("verify_ssl", True)
         user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
+        obj.email = acct_data.get("email", None)
         obj.directory = acct_data.get("directory", None)
         obj._profile = acct_data.get("profile", None)
         obj.domains = acct_data.get("domains", [])
         obj.certificate = acct_data.get("certificate", "").encode()
         obj.private_key = acct_data.get("private_key", "").encode()
-        if acct_data["account"]["body"]["contact"]:
-            obj.email = acct_data["account"]["body"]["contact"][0].replace(
-                "mailto:", ""
-            )
         obj.account = messages.RegistrationResource.json_loads(
             json.dumps(acct_data["account"])
         )
@@ -767,24 +765,21 @@ class ACMEClient:
             simple_acme_dns.errors.InvalidEmail: When `email` is not set.
 
         """
-        if not self._email:
-            msg = "No account email found. You must set the _email value first."
-            raise errors.InvalidEmail(msg)
-
         return self._email
 
     @email.setter
-    def email(self, value: str):
+    def email(self, value: Union[str, None]) -> None:
         """
         Setter for the `email` property. This ensures an email address is valid before setting.
 
         Args
-         value (str): The `email` value being set.
+         value (Union[str, None]): The `email` value being set. Use None for anonymous accounts.
 
         Raises:
             simple_acme_dns.errors.InvalidEmail: When the `value` is not a valid email address
         """
-        if not validators.email(value):
+        # If an email address was provided, ensure it is a valid email address
+        if value and not validators.email(value):
             msg = f"Value '{value}' is not a valid email address."
             raise errors.InvalidEmail(msg)
 
