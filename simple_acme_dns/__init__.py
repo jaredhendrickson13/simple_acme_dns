@@ -480,7 +480,6 @@ class ACMEClient:
         obj.user_agent = acct_data.get("user_agent", DEFAULT_USER_AGENT)
         obj.email = acct_data.get("email", None)
         obj.directory = acct_data.get("directory", None)
-        obj._profile = acct_data.get("profile", None)
         obj.domains = acct_data.get("domains", [])
         obj.certificate = acct_data.get("certificate", "").encode()
         obj.private_key = acct_data.get("private_key", "").encode()
@@ -498,6 +497,8 @@ class ACMEClient:
         )
         obj.acme_client = client.ClientV2(obj.directory_obj, net=obj.net)
         obj.account = obj.acme_client.query_registration(obj.account)
+        obj.profile = acct_data.get("profile", None)
+
 
         return obj
 
