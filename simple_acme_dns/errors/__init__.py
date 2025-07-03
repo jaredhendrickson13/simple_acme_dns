@@ -56,6 +56,12 @@ class InvalidAccount(Exception):
         self.message = message
 
 
+class InvalidProfile(Exception):
+    """Error occurs when an ACME profile is requested but is not advertised by the server"""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+
 class InvalidEmail(Exception):
     """Error occurs when an account action was requested but no email value exists"""
     def __init__(self, message: str) -> None:

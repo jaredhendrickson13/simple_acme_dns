@@ -23,6 +23,7 @@ import time
 
 import josepy as jose
 import validators
+from typing import Union
 from acme import challenges
 from acme import client
 from acme import crypto_util
@@ -53,6 +54,7 @@ class ACMEClient:
             domains: list = None,
             email: str = None,
             directory: str = "https://acme-staging-v02.api.letsencrypt.org/directory",
+            profile: Union[str, None] = None,
             nameservers: list = None,
             new_account: bool = False,
             generate_csr: bool = False,
@@ -63,6 +65,7 @@ class ACMEClient:
             domains (list): A list of domains to request a certificate for.
             email (str): An email address to use when registering new ACME accounts.
             directory (str): The ACME directory URL to interact with.
+            profile (Union[str, None]): The ACME profile to use. Use None to omit profile selection.
             nameservers (list): A list of DNS server hosts to query when checking DNS propagation.
             new_account (bool): Automatically create a new ACME account upon creation.
             generate_csr (bool): Automatically generate a new private key and CSR upon creation.
@@ -96,6 +99,7 @@ class ACMEClient:
         self._email = email
         self._certificate = ''.encode()
         self._private_key = ''.encode()
+        self._profile = profile
         self._acme_client = None
         self._verification_tokens = {}
 
@@ -215,7 +219,10 @@ class ACMEClient:
         # Variables
         verification_tokens = {}
         self.responses = {}
-        self.order = self.acme_client.new_order(self.csr)
+
+        # Ensure the assigned profile is still valid before creating a new order
+        self._validate_profile(self.profile)
+        self.order = self.acme_client.new_order(self.csr, profile=self.profile)
 
         # Loop through each domain being challenged
         for domain, challenge_items in self.challenges.items():
@@ -646,11 +653,58 @@ class ACMEClient:
         Raises:
             simple_acme_dns.errors.InvalidAccount: When the `value` is not a valid email address
         """
-        if not isinstance(value, client.ClientV2):
+        if value is not None and not isinstance(value, client.ClientV2):
             msg = f"Value '{value}' is not an acme.client.ClientV2 object."
             raise errors.InvalidAccount(msg)
 
         self._acme_client = value
+
+    def _validate_profile(self, profile: Union[str, None]) -> None:
+        """
+        Validates that the requested ACME profile is supported by the ACME server.
+
+        Args:
+            profile (Union[str, None]): The requested ACME profile to validate.
+
+        Raises:
+            simple_acme_dns.errors.InvalidProfile: When the requested profile is not supported by the ACME server.
+        """
+        # When no profile is requested, simply set the profile to None and return
+        if not profile:
+            return
+
+        # Check the ACME server directory's metadata for support profiles
+        directory_metadata = self.acme_client.directory.to_json().get("meta", {})
+        profile_options = list(directory_metadata.get("profiles", {}))
+        if profile not in profile_options:
+            raise errors.InvalidProfile(
+                f"ACME server does not support profile option '{profile}'. Valid options are: {profile_options}"
+            )
+
+    @property
+    def profile(self) -> Union[str, None]:
+        """
+        Getter for the `profile` property. This returns the current ACME profile being used.
+
+        Returns:
+            Union[str, None]: The current ACME profile being used.
+        """
+        return self._profile
+
+    @profile.setter
+    def profile(self, value: Union[str, None]) -> None:
+        """
+        Setter for the `profile` property. This ensures the profile is a valid string.
+
+        Args:
+            value (Union[str, None]): The `profile` value being set. Use None to omit profile selection.
+
+        Raises:
+            simple_acme_dns.errors.InvalidProfile: When the `value` is not a valid profile.
+        """
+        # Validate the requested profile against the ACME server's supported profiles before setting
+        self._validate_profile(value)
+        self._profile = value
 
     @property
     def email(self) -> str:
