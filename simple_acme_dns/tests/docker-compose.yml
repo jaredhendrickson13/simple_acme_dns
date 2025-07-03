@@ -1,5 +1,4 @@
 # Docker compose file for setting up a Pebble ACME and challenge server for testing
-version: "3"
 services:
   pebble:
     image: ghcr.io/letsencrypt/pebble:latest
