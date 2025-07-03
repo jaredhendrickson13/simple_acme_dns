@@ -189,7 +189,7 @@ class ACMEClient:
         # Otherwise, the requested key type is not supported. Throw an error
         else:
             options = ["ec256", "ec384", "rsa2048", "rsa4096"]
-            msg = f"Invalid private key rtype '{key_type}'. Options {options}"
+            msg = f"Invalid private key type '{key_type}'. Options {options}"
             raise errors.InvalidKeyType(msg)
         return self.private_key
 
