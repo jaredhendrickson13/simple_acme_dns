@@ -2,5 +2,5 @@ google-cloud-dns~=0.36.0
 pylint~=3.3.9
 coverage~=7.10.7
 pdoc3~=0.11.6
-setuptools~=82.0.0
+setuptools~=82.0.1
 black~=25.11.0
