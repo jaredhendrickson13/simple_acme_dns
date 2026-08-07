@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module containing tools needed for the simple_acme_dns package."""
+
 from importlib.metadata import version, PackageNotFoundError
 
 import dns.resolver
