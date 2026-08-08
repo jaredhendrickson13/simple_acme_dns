@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests primary functionality of the simple_acme_dns package."""
+
 import os
 import time
 import unittest
